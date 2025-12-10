@@ -1,6 +1,6 @@
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { FoodCard } from '@/components/FoodCard';
-import { InputField } from '@/components/InputField';
+import { SearchBar } from '@/components/SearchBar';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -103,14 +103,11 @@ export default function SearchScreen() {
       </View>
 
       {/* Search Container */}
-      <View style={styles.searchContainer}>
-        <InputField
-          placeholder="Search for food..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          icon="search"
-        />
-      </View>
+      <SearchBar
+        placeholder="Search for food..."
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+      />
 
       {/* Categories Section */}
       <View style={styles.categoriesSection}>
@@ -196,11 +193,6 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.body,
     color: 'rgba(255, 255, 255, 0.8)',
     marginTop: SPACING.xs,
-  },
-  searchContainer: {
-    paddingHorizontal: SPACING.lg,
-    paddingBottom: SPACING.lg,
-    backgroundColor: COLORS.white,
   },
   categoriesSection: {
     backgroundColor: COLORS.white,
