@@ -58,7 +58,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
           {name}
         </Text>
         <View style={styles.footer}>
-          <Text style={styles.price}>₦{price.toLocaleString()}</Text>
+          <Text style={styles.price}>R{price.toLocaleString()}</Text>
           {onCartPress && (
             <TouchableOpacity
               style={styles.cartButton}

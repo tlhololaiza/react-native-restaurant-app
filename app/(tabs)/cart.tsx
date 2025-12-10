@@ -74,7 +74,7 @@ export default function CartScreen() {
       
       <View style={styles.itemDetails}>
         <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>₦{item.price.toLocaleString()}</Text>
+        <Text style={styles.itemPrice}>R{item.price.toLocaleString()}</Text>
       </View>
 
       <View style={styles.quantityControl}>
@@ -154,16 +154,16 @@ export default function CartScreen() {
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>₦{totalPrice.toLocaleString()}</Text>
+          <Text style={styles.summaryValue}>R{totalPrice.toLocaleString()}</Text>
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Delivery Fee</Text>
-          <Text style={styles.summaryValue}>₦500</Text>
+          <Text style={styles.summaryValue}>R50</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>₦{(totalPrice + 500).toLocaleString()}</Text>
+          <Text style={styles.totalValue}>R{(totalPrice + 50).toLocaleString()}</Text>
         </View>
       </View>
 

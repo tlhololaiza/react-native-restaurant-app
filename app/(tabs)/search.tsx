@@ -27,7 +27,7 @@ const FOOD_ITEMS = [
     id: '1',
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
     name: 'Classic Burger',
-    price: 2500,
+    price: 89,
     rating: 4.5,
     category: '1',
   },
@@ -35,7 +35,7 @@ const FOOD_ITEMS = [
     id: '2',
     image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=300&fit=crop',
     name: 'Margarita Pizza',
-    price: 3500,
+    price: 129,
     rating: 4.7,
     category: '2',
   },
@@ -43,7 +43,7 @@ const FOOD_ITEMS = [
     id: '3',
     image: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=400&h=300&fit=crop',
     name: 'Spicy Fried Chicken',
-    price: 2800,
+    price: 99,
     rating: 4.6,
     category: '3',
   },
@@ -51,7 +51,7 @@ const FOOD_ITEMS = [
     id: '4',
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
     name: 'Chocolate Cake',
-    price: 1500,
+    price: 59,
     rating: 4.8,
     category: '4',
   },
@@ -59,7 +59,7 @@ const FOOD_ITEMS = [
     id: '5',
     image: 'https://images.unsplash.com/photo-1599599810694-f3f465b6ee0d?w=400&h=300&fit=crop',
     name: 'Fresh Juice',
-    price: 800,
+    price: 29,
     rating: 4.4,
     category: '5',
   },
@@ -67,7 +67,7 @@ const FOOD_ITEMS = [
     id: '6',
     image: 'https://images.unsplash.com/photo-1571115764595-644a12c7cb72?w=400&h=300&fit=crop',
     name: 'Double Cheeseburger',
-    price: 3200,
+    price: 119,
     rating: 4.6,
     category: '1',
   },
@@ -96,10 +96,13 @@ export default function SearchScreen() {
 
   const renderHeader = () => (
     <View>
+      {/* Header Section */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Search</Text>
+        <Text style={styles.headerTitle}>🔍 Discover Meals</Text>
+        <Text style={styles.headerSubtitle}>Find your favorite dishes</Text>
       </View>
 
+      {/* Search Container */}
       <View style={styles.searchContainer}>
         <InputField
           placeholder="Search for food..."
@@ -109,8 +112,12 @@ export default function SearchScreen() {
         />
       </View>
 
+      {/* Categories Section */}
       <View style={styles.categoriesSection}>
-        <Text style={styles.sectionTitle}>Filter by Category</Text>
+        <View style={styles.categoryHeader}>
+          <MaterialIcons name="filter-alt" size={20} color={COLORS.primary} />
+          <Text style={styles.sectionTitle}>Filter by Category</Text>
+        </View>
         <CategoryTabs
           categories={CATEGORIES}
           activeCategory={activeCategory}
@@ -120,11 +127,15 @@ export default function SearchScreen() {
         />
       </View>
 
-      {searchQuery && (
+      {/* Results Header */}
+      {(searchQuery || activeCategory) && (
         <View style={styles.resultsHeader}>
-          <Text style={styles.resultsText}>
-            Found {filteredItems.length} items
-          </Text>
+          <View style={styles.resultsContent}>
+            <MaterialIcons name="done-all" size={18} color={COLORS.primary} />
+            <Text style={styles.resultsText}>
+              Found <Text style={styles.resultsBold}>{filteredItems.length}</Text> delicious items
+            </Text>
+          </View>
         </View>
       )}
     </View>
@@ -173,11 +184,18 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primary,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   headerTitle: {
-    ...TYPOGRAPHY.h3,
-    color: COLORS.text,
+    ...TYPOGRAPHY.h2,
+    color: COLORS.white,
+  },
+  headerSubtitle: {
+    ...TYPOGRAPHY.body,
+    color: 'rgba(255, 255, 255, 0.8)',
+    marginTop: SPACING.xs,
   },
   searchContainer: {
     paddingHorizontal: SPACING.lg,
@@ -194,14 +212,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.md,
   },
+  categoryHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   resultsHeader: {
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     backgroundColor: COLORS.white,
   },
+  resultsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
   resultsText: {
     ...TYPOGRAPHY.subtitle,
-    color: COLORS.textLight,
+    color: COLORS.text,
+  },
+  resultsBold: {
+    fontWeight: '700',
+    color: COLORS.primary,
   },
   listContent: {
     paddingBottom: SPACING.xxxl,
