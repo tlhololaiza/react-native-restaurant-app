@@ -7,13 +7,13 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Dimensions,
-    FlatList,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
@@ -32,7 +32,7 @@ const FOOD_ITEMS = [
     id: '1',
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
     name: 'Classic Burger',
-    price: 2500,
+    price: 89,
     rating: 4.5,
     category: '1',
   },
@@ -40,7 +40,7 @@ const FOOD_ITEMS = [
     id: '2',
     image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=300&fit=crop',
     name: 'Margarita Pizza',
-    price: 3500,
+    price: 129,
     rating: 4.7,
     category: '2',
   },
@@ -48,7 +48,7 @@ const FOOD_ITEMS = [
     id: '3',
     image: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=400&h=300&fit=crop',
     name: 'Spicy Fried Chicken',
-    price: 2800,
+    price: 99,
     rating: 4.6,
     category: '3',
   },
@@ -56,7 +56,7 @@ const FOOD_ITEMS = [
     id: '4',
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
     name: 'Chocolate Cake',
-    price: 1500,
+    price: 59,
     rating: 4.8,
     category: '4',
   },
@@ -64,7 +64,7 @@ const FOOD_ITEMS = [
     id: '5',
     image: 'https://images.unsplash.com/photo-1599599810694-f3f465b6ee0d?w=400&h=300&fit=crop',
     name: 'Fresh Juice',
-    price: 800,
+    price: 29,
     rating: 4.4,
     category: '5',
   },
@@ -72,7 +72,7 @@ const FOOD_ITEMS = [
     id: '6',
     image: 'https://images.unsplash.com/photo-1571115764595-644a12c7cb72?w=400&h=300&fit=crop',
     name: 'Double Cheeseburger',
-    price: 3200,
+    price: 119,
     rating: 4.6,
     category: '1',
   },
@@ -82,6 +82,7 @@ export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('1');
   const [cartCount, setCartCount] = useState(0);
+  const [userName] = useState('John'); // This would come from auth context in production
 
   const filteredItems = FOOD_ITEMS.filter(
     (item) =>
@@ -101,17 +102,25 @@ export default function HomeScreen() {
     // TODO: Add item to cart context/state
   };
 
-  const renderHeader = () => (
-    <View>
-      {/* Header Bar */}
-      <View style={styles.headerBar}>
-        <View>
-          <Text style={styles.greeting}>Good Morning!</Text>
-          <Text style={styles.location}>
-            <MaterialIcons name="location-on" size={14} color={COLORS.textLight} />
-            {' 123 Main St, City'}
-          </Text>
-        </View>
+  const renderHeader = () => {
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good Morning';
+      if (hour < 18) return 'Good Afternoon';
+      return 'Good Evening';
+    };
+
+    return (
+      <View>
+        {/* Header Bar */}
+        <View style={styles.headerBar}>
+          <View>
+            <Text style={styles.greeting}>{getGreeting()}, {userName}!</Text>
+            <Text style={styles.location}>
+              <MaterialIcons name="location-on" size={14} color={COLORS.textLight} />
+              {' 123 Main St, City'}
+            </Text>
+          </View>
         <TouchableOpacity
           style={styles.cartIcon}
           onPress={() => router.push('/(tabs)/cart')}
@@ -144,7 +153,8 @@ export default function HomeScreen() {
 
       <Text style={styles.resultsTitle}>Popular Items</Text>
     </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={commonStyles.container}>

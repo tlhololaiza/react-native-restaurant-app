@@ -128,7 +128,7 @@ export default function CheckoutScreen() {
             <View style={{ flex: 1, marginLeft: SPACING.md }}>
               <Text style={styles.paymentMethodName}>Mobile Wallet</Text>
               <Text style={styles.paymentMethodDescription}>
-                Balance: ₦5,000
+                Balance: R5,000
               </Text>
             </View>
           </TouchableOpacity>
@@ -183,7 +183,7 @@ export default function CheckoutScreen() {
                   {item.name} x{item.quantity}
                 </Text>
                 <Text style={styles.summaryItemPrice}>
-                  ₦{(item.price * item.quantity).toLocaleString()}
+                  R{(item.price * item.quantity).toLocaleString()}
                 </Text>
               </View>
             ))}
@@ -192,24 +192,24 @@ export default function CheckoutScreen() {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>₦{subtotal.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>R{subtotal.toLocaleString()}</Text>
             </View>
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Tax (5%)</Text>
-              <Text style={styles.summaryValue}>₦{tax.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>R{tax.toLocaleString()}</Text>
             </View>
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>₦{deliveryFee.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>R{deliveryFee.toLocaleString()}</Text>
             </View>
 
             <View style={styles.divider} />
 
             <View style={styles.summaryRow}>
               <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>₦{total.toLocaleString()}</Text>
+              <Text style={styles.totalValue}>R{total.toLocaleString()}</Text>
             </View>
           </View>
         </View>

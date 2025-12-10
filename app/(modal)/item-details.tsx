@@ -136,7 +136,7 @@ export default function ItemDetailsScreen() {
           {/* Price Display */}
           <View style={styles.priceContainer}>
             <Text style={styles.priceLabel}>Price</Text>
-            <Text style={styles.price}>₦{totalPrice.toLocaleString()}</Text>
+            <Text style={styles.price}>R{totalPrice.toLocaleString()}</Text>
           </View>
 
           {/* Quantity Selector */}
@@ -176,7 +176,7 @@ export default function ItemDetailsScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionName}>{extra.name}</Text>
                 </View>
-                <Text style={styles.optionPrice}>+₦{extra.price}</Text>
+                <Text style={styles.optionPrice}>+R{extra.price}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -198,7 +198,7 @@ export default function ItemDetailsScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionName}>{side.name}</Text>
                 </View>
-                <Text style={styles.optionPrice}>+₦{side.price}</Text>
+                <Text style={styles.optionPrice}>+R{side.price}</Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -219,7 +219,7 @@ export default function ItemDetailsScreen() {
                   style={styles.suggestedImage}
                 />
                 <Text style={styles.suggestedName}>Pizza</Text>
-                <Text style={styles.suggestedPrice}>₦3500</Text>
+                <Text style={styles.suggestedPrice}>R129</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.suggestedCard}>
@@ -230,7 +230,7 @@ export default function ItemDetailsScreen() {
                   style={styles.suggestedImage}
                 />
                 <Text style={styles.suggestedName}>Chicken</Text>
-                <Text style={styles.suggestedPrice}>₦2800</Text>
+                <Text style={styles.suggestedPrice}>R99</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.suggestedCard}>
@@ -241,7 +241,7 @@ export default function ItemDetailsScreen() {
                   style={styles.suggestedImage}
                 />
                 <Text style={styles.suggestedName}>Dessert</Text>
-                <Text style={styles.suggestedPrice}>₦1500</Text>
+                <Text style={styles.suggestedPrice}>R59</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>

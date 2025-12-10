@@ -5,12 +5,12 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const EXTRAS = [
@@ -94,7 +94,7 @@ export default function EditExtrasScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.optionName}>{extra.name}</Text>
               </View>
-              <Text style={styles.optionPrice}>+₦{extra.price}</Text>
+              <Text style={styles.optionPrice}>+R{extra.price}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -123,7 +123,7 @@ export default function EditExtrasScreen() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.optionName}>{side.name}</Text>
               </View>
-              <Text style={styles.optionPrice}>+₦{side.price}</Text>
+              <Text style={styles.optionPrice}>+R{side.price}</Text>
             </TouchableOpacity>
           ))}
         </View>
