@@ -73,7 +73,7 @@ export default function EditExtrasScreen() {
         {/* Add Extras Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Add Extras</Text>
-          <Text style={styles.sectionSubtitle}>Select any extras you'd like to add</Text>
+          <Text style={styles.sectionSubtitle}>Select any extras you&apos;d like to add</Text>
 
           {EXTRAS.map((extra) => (
             <TouchableOpacity
@@ -131,7 +131,7 @@ export default function EditExtrasScreen() {
         {/* Remove Ingredients Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Remove Ingredients</Text>
-          <Text style={styles.sectionSubtitle}>Uncheck items you don't want</Text>
+          <Text style={styles.sectionSubtitle}>Uncheck items you don&apos;t want</Text>
 
           {REMOVE_OPTIONS.map((item) => (
             <TouchableOpacity

@@ -1,10 +1,9 @@
 import { Button } from '@/components/Button';
 import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY, commonStyles } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
+import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { router } from 'expo-router';
 import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function SplashScreen() {
   return (
@@ -12,7 +11,11 @@ export default function SplashScreen() {
       <View style={[commonStyles.centered, { flex: 1 }]}>
         {/* Logo */}
         <View style={styles.logoContainer}>
-          <MaterialIcons name="restaurant" size={80} color={COLORS.white} />
+          <Image
+            source={require('../assets/logo/logo.jpg')}
+            style={styles.logoImage}
+            resizeMode="cover"
+          />
         </View>
 
         <Text style={styles.appName}>FoodHub</Text>
@@ -48,12 +51,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   logoContainer: {
-    width: 120,
-    height: 120,
+    width: 160,
+    height: 160,
     borderRadius: RADIUS.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: COLORS.white,
     ...commonStyles.centered,
     marginBottom: SPACING.xl,
+    overflow: 'hidden',
+    ...SHADOWS.lg,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
   },
   appName: {
     ...TYPOGRAPHY.h1,

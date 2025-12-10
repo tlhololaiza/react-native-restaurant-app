@@ -1,11 +1,12 @@
 import { Button } from '@/components/Button';
 import { InputField } from '@/components/InputField';
 import { COLORS } from '@/utils/colors';
-import { SPACING, TYPOGRAPHY } from '@/utils/theme';
+import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Image,
     KeyboardAvoidingView,
     Platform,
     SafeAreaView,
@@ -85,6 +86,20 @@ export default function RegisterScreen() {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Create Account</Text>
             <View style={{ width: 24 }} />
+          </View>
+
+          {/* Logo Section */}
+          <View style={styles.logoSection}>
+            <View style={styles.logoCircle}>
+              <Image
+                source={require('../../assets/logo/logo.jpg')}
+                style={styles.logoImage}
+                resizeMode="cover"
+              />
+            </View>
+            <Text style={styles.welcomeText}>Join FoodHub</Text>
+            <Text style={styles.subtitle}>Create your account for delicious meals</Text>
+            <View style={styles.decorativeLine} />
           </View>
 
           {/* Form */}
@@ -198,6 +213,45 @@ const styles = StyleSheet.create({
   headerTitle: {
     ...TYPOGRAPHY.h3,
     color: COLORS.text,
+  },
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: SPACING.xl,
+    marginTop: SPACING.md,
+  },
+  logoCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: RADIUS.full,
+    backgroundColor: COLORS.white,
+    ...commonStyles.centered,
+    marginBottom: SPACING.lg,
+    overflow: 'hidden',
+    ...SHADOWS.md,
+    borderWidth: 3,
+    borderColor: COLORS.primary,
+  },
+  logoImage: {
+    width: '100%',
+    height: '100%',
+  },
+  welcomeText: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.text,
+    marginBottom: SPACING.xs,
+    textAlign: 'center',
+  },
+  subtitle: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textLight,
+    textAlign: 'center',
+  },
+  decorativeLine: {
+    width: 60,
+    height: 4,
+    backgroundColor: COLORS.primary,
+    borderRadius: RADIUS.xs,
+    marginTop: SPACING.md,
   },
   form: {
     marginBottom: SPACING.xl,
