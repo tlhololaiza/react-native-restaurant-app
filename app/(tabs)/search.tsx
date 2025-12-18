@@ -7,11 +7,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    FlatList,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    View
+  FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 
 const CATEGORIES = [

@@ -1,27 +1,30 @@
 import { Button } from '@/components/Button';
 import { InputField } from '@/components/InputField';
+import { getUserProfile, loginUser } from '@/services/firebase';
+import { useAuthStore } from '@/utils/authStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const { setUser, setUserProfile, setLoading: setStoreLoading, setError: setStoreError } = useAuthStore();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
@@ -46,12 +49,25 @@ export default function LoginScreen() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setStoreLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const user = await loginUser(email, password);
+      setUser(user);
+
+      // Fetch user profile
+      const profile = await getUserProfile(user.uid);
+      if (profile) {
+        setUserProfile(profile);
+      }
+
       router.replace('/(tabs)/home');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Login failed. Please try again.';
+      setErrors({ general: errorMessage });
+      setStoreError(errorMessage);
     } finally {
       setLoading(false);
+      setStoreLoading(false);
     }
   };
 
@@ -111,6 +127,11 @@ export default function LoginScreen() {
               secureTextEntry
               error={errors.password}
             />
+
+            {/* General Error */}
+            {errors.general && (
+              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>{errors.general}</Text>
+            )}
 
             {/* Forgot Password */}
             <TouchableOpacity style={styles.forgotPassword}>
@@ -248,6 +269,10 @@ const styles = StyleSheet.create({
   dividerText: {
     ...TYPOGRAPHY.caption,
     color: COLORS.textLight,
+  },
+  error: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.error,
   },
   socialContainer: {
     flexDirection: 'row',

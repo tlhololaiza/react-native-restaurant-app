@@ -1,20 +1,22 @@
 import { Button } from '@/components/Button';
 import { InputField } from '@/components/InputField';
+import { getUserProfile, registerUser } from '@/services/firebase';
+import { useAuthStore } from '@/utils/authStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function RegisterScreen() {
@@ -30,6 +32,7 @@ export default function RegisterScreen() {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { setUser, setUserProfile, setLoading: setStoreLoading, setError: setStoreError } = useAuthStore();
 
   const updateForm = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -58,11 +61,32 @@ export default function RegisterScreen() {
     if (!validateForm()) return;
 
     setLoading(true);
+    setStoreLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const user = await registerUser(formData.email, formData.password, {
+        name: formData.name,
+        surname: formData.surname,
+        phone: formData.phone,
+        address: formData.address,
+        cardNumber: formData.cardNumber,
+      });
+
+      setUser(user);
+
+      // Fetch user profile
+      const profile = await getUserProfile(user.uid);
+      if (profile) {
+        setUserProfile(profile);
+      }
+
       router.replace('/(tabs)/home');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Registration failed. Please try again.';
+      setErrors({ general: errorMessage });
+      setStoreError(errorMessage);
     } finally {
       setLoading(false);
+      setStoreLoading(false);
     }
   };
 
@@ -170,6 +194,11 @@ export default function RegisterScreen() {
               icon="credit-card"
               error={errors.cardNumber}
             />
+
+            {/* General Error */}
+            {errors.general && (
+              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>{errors.general}</Text>
+            )}
           </View>
 
           {/* Register Button */}
@@ -276,5 +305,9 @@ const styles = StyleSheet.create({
   loginLink: {
     ...TYPOGRAPHY.bodyBold,
     color: COLORS.primary,
+  },
+  error: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.error,
   },
 });

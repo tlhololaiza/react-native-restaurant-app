@@ -1,41 +1,83 @@
 import { Button } from '@/components/Button';
 import { InputField } from '@/components/InputField';
+import { logoutUser, updateUserProfile } from '@/services/firebase';
+import { useAuthStore } from '@/utils/authStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import React, { useCallback, useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 export default function ProfileScreen() {
+  const { user, userProfile, setUser, setUserProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: 'John',
-    surname: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+234 800 000 0000',
-    address: '123 Street Name, City',
-    cardNumber: '1234 5678 9012 3456',
-    cardExpiry: '12/25',
-    cardCVC: '123',
+    name: userProfile?.name || 'John',
+    surname: userProfile?.surname || 'Doe',
+    email: userProfile?.email || 'john.doe@example.com',
+    phone: userProfile?.phone || '+234 800 000 0000',
+    address: userProfile?.address || '123 Street Name, City',
+    cardNumber: userProfile?.cardNumber || '1234 5678 9012 3456',
+    cardExpiry: userProfile?.cardExpiry || '12/25',
+    cardCVC: userProfile?.cardCVV || '123',
   });
 
   const [editData, setEditData] = useState(profileData);
+
+  // Check if user is authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) {
+        router.replace('/(auth)/login');
+      }
+    }, [user])
+  );
 
   const updateField = (field: string, value: string) => {
     setEditData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSaveChanges = () => {
-    setProfileData(editData);
-    setIsEditing(false);
+  const handleSaveChanges = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      await updateUserProfile(user.uid, {
+        name: editData.name,
+        surname: editData.surname,
+        phone: editData.phone,
+        address: editData.address,
+        cardNumber: editData.cardNumber,
+        cardExpiry: editData.cardExpiry,
+        cardCVV: editData.cardCVC,
+      });
+      
+      setProfileData(editData);
+      setUserProfile({
+        ...userProfile!,
+        name: editData.name,
+        surname: editData.surname,
+        phone: editData.phone,
+        address: editData.address,
+        cardNumber: editData.cardNumber,
+        cardExpiry: editData.cardExpiry,
+        cardCVV: editData.cardCVC,
+      });
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -43,10 +85,21 @@ export default function ProfileScreen() {
     setIsEditing(false);
   };
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    router.replace('/(auth)/login');
+  const handleLogout = async () => {
+    setLoading(true);
+    try {
+      await logoutUser();
+      setUser(null);
+      setUserProfile(null);
+      router.replace('/(auth)/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  
 
   const ProfileField = ({
     label,
@@ -174,6 +227,7 @@ export default function ProfileScreen() {
             <Button
               title="Logout"
               onPress={handleLogout}
+              loading={loading}
               variant="danger"
               fullWidth
               size="lg"

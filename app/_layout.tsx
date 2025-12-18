@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/context/AuthContext';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 
@@ -7,11 +8,12 @@ export default function RootLayout() {
   SplashScreen.hideAsync();
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
+    <AuthProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
       <Stack.Screen
         name="splash"
         options={{
@@ -38,6 +40,7 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen name="index" />
-    </Stack>
+      </Stack>
+    </AuthProvider>
   );
 }
