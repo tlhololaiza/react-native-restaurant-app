@@ -3,14 +3,11 @@ import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    Dimensions,
     StyleSheet,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
-
-const { width } = Dimensions.get('window');
 
 interface SearchBarProps {
   value: string;

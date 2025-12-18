@@ -1,11 +1,13 @@
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { FoodCard } from '@/components/FoodCard';
 import { SearchBar } from '@/components/SearchBar';
+import { getFoodItems } from '@/services/foodService';
 import { COLORS } from '@/utils/colors';
+import { initializeFirestoreData } from '@/utils/seedService';
 import { commonStyles, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -15,69 +17,34 @@ import {
 } from 'react-native';
 
 const CATEGORIES = [
-  { id: '1', name: 'Burgers' },
-  { id: '2', name: 'Pizza' },
-  { id: '3', name: 'Chicken' },
-  { id: '4', name: 'Desserts' },
-  { id: '5', name: 'Drinks' },
-];
-
-const FOOD_ITEMS = [
-  {
-    id: '1',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-    name: 'Classic Burger',
-    price: 89,
-    rating: 4.5,
-    category: '1',
-  },
-  {
-    id: '2',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=300&fit=crop',
-    name: 'Margarita Pizza',
-    price: 129,
-    rating: 4.7,
-    category: '2',
-  },
-  {
-    id: '3',
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=400&h=300&fit=crop',
-    name: 'Spicy Fried Chicken',
-    price: 99,
-    rating: 4.6,
-    category: '3',
-  },
-  {
-    id: '4',
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-    name: 'Chocolate Cake',
-    price: 59,
-    rating: 4.8,
-    category: '4',
-  },
-  {
-    id: '5',
-    image: 'https://images.unsplash.com/photo-1599599810694-f3f465b6ee0d?w=400&h=300&fit=crop',
-    name: 'Fresh Juice',
-    price: 29,
-    rating: 4.4,
-    category: '5',
-  },
-  {
-    id: '6',
-    image: 'https://images.unsplash.com/photo-1571115764595-644a12c7cb72?w=400&h=300&fit=crop',
-    name: 'Double Cheeseburger',
-    price: 119,
-    rating: 4.6,
-    category: '1',
-  },
+  { id: 'burgers', name: 'Burgers' },
+  { id: 'pizza', name: 'Pizza' },
+  { id: 'chicken', name: 'Chicken' },
+  { id: 'desserts', name: 'Desserts' },
+  { id: 'drinks', name: 'Drinks' },
 ];
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('');
+  const [foodItems, setFoodItems] = useState<any[]>([]);
 
-  const filteredItems = FOOD_ITEMS.filter((item) => {
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await initializeFirestoreData();
+        const items = await getFoodItems();
+        console.log('SearchScreen: Loaded items:', items.length);
+        setFoodItems(items);
+      } catch (error) {
+        console.error('SearchScreen: Error loading food items:', error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const filteredItems = foodItems.filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !activeCategory || item.category === activeCategory;
     return matchesSearch && matchesCategory;

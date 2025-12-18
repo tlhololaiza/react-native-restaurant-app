@@ -5,14 +5,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import {
-  Dimensions,
   SafeAreaView,
   StyleSheet,
   Text,
   View
 } from 'react-native';
-
-const { height, width } = Dimensions.get('window');
 
 export default function OrderSuccessScreen() {
   const { orderNumber } = useLocalSearchParams<{ orderNumber: string }>();

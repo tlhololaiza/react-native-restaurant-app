@@ -78,7 +78,7 @@ export default function CheckoutScreen() {
         pathname: '/(modal)/order-success',
         params: { orderNumber: orderId },
       });
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);

@@ -6,7 +6,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Dimensions,
     Image,
     SafeAreaView,
     ScrollView,
@@ -15,8 +14,6 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-
-const { height } = Dimensions.get('window');
 
 // Mock item data
 const FOOD_DATA: Record<
@@ -291,7 +288,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: height * 0.35,
+    height: 280,
     backgroundColor: COLORS.white,
     position: 'relative',
     marginBottom: SPACING.lg,
