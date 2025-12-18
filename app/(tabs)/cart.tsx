@@ -73,6 +73,14 @@ export default function CartScreen() {
         </TouchableOpacity>
       </View>
 
+        {/* Edit extras */}
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: '/(modal)/edit-extras', params: { itemId: item.id } })}
+          style={styles.removeButton}
+        >
+          <MaterialIcons name="edit" size={20} color={COLORS.primary} />
+        </TouchableOpacity>
+
       <TouchableOpacity
         onPress={() => handleRemoveItem(item.id)}
         style={styles.removeButton}

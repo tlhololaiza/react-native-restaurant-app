@@ -18,6 +18,11 @@ interface CartStore {
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
   updateItemExtras: (id: string, extras: CartItem['extras']) => void;
+  updateItemSides: (id: string, sides: CartItem['sides']) => void;
+  updateItemRemovedIngredients: (
+    id: string,
+    removedIngredients: CartItem['removedIngredients']
+  ) => void;
   getTotal: () => number;
   getItemCount: () => number;
 }
@@ -51,6 +56,18 @@ export const useCartStore = create<CartStore>((set, get) => ({
     set((state) => ({
       items: state.items.map((item) =>
         item.id === id ? { ...item, extras } : item
+      ),
+    })),
+  updateItemSides: (id, sides) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, sides } : item
+      ),
+    })),
+  updateItemRemovedIngredients: (id, removedIngredients) =>
+    set((state) => ({
+      items: state.items.map((item) =>
+        item.id === id ? { ...item, removedIngredients } : item
       ),
     })),
   getTotal: () => {

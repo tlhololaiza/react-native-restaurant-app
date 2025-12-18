@@ -1,16 +1,17 @@
 import { Button } from '@/components/Button';
+import { useCartStore } from '@/utils/cartStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 
 const EXTRAS = [
@@ -35,8 +36,35 @@ const REMOVE_OPTIONS = [
 
 export default function EditExtrasScreen() {
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
+  const { items, updateItemExtras, updateItemSides, updateItemRemovedIngredients } = useCartStore();
+  const cartItem = useMemo(() => items.find(i => i.id === itemId), [items, itemId]);
+
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [selectedSide, setSelectedSide] = useState<string | null>(null);
   const [removedItems, setRemovedItems] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (cartItem) {
+      if (cartItem.extras) {
+        const initialExtraIds = cartItem.extras.map(ex => {
+          const match = [...EXTRAS, ...SIDES].find(e => e.name === ex.name && e.price === ex.price);
+          return match?.id;
+        }).filter((id): id is string => Boolean(id));
+        setSelectedExtras(initialExtraIds);
+      }
+      if (cartItem.sides) {
+        const matchSide = SIDES.find(s => s.name === cartItem.sides);
+        setSelectedSide(matchSide?.id ?? null);
+      }
+      if (cartItem.removedIngredients) {
+        const initialRemovedIds = cartItem.removedIngredients.map(name => {
+          const match = REMOVE_OPTIONS.find(r => r.name === name);
+          return match?.id;
+        }).filter((id): id is string => Boolean(id));
+        setRemovedItems(initialRemovedIds);
+      }
+    }
+  }, [cartItem]);
 
   const toggleExtra = (extraId: string) => {
     setSelectedExtras((prev) =>
@@ -51,7 +79,29 @@ export default function EditExtrasScreen() {
   };
 
   const handleSaveExtras = () => {
-    // TODO: Save extras to cart item
+    if (!itemId) {
+      router.back();
+      return;
+    }
+
+    const extrasToSave = selectedExtras.reduce<{ name: string; price: number }[]>((acc, id) => {
+      const found = [...EXTRAS, ...SIDES].find(e => e.id === id);
+      if (found) acc.push({ name: found.name, price: found.price });
+      return acc;
+    }, []);
+
+    const sideToSave = selectedSide
+      ? (SIDES.find(s => s.id === selectedSide)?.name ?? null)
+      : null;
+
+    const removedIngredientsToSave = removedItems
+      .map(id => REMOVE_OPTIONS.find(r => r.id === id)?.name)
+      .filter((name): name is string => Boolean(name));
+
+    updateItemExtras(itemId, extrasToSave.length > 0 ? extrasToSave : undefined);
+    updateItemSides(itemId, sideToSave ?? undefined);
+    updateItemRemovedIngredients(itemId, removedIngredientsToSave.length > 0 ? removedIngredientsToSave : undefined);
+
     router.back();
   };
 
@@ -108,15 +158,15 @@ export default function EditExtrasScreen() {
             <TouchableOpacity
               key={side.id}
               style={styles.optionItem}
-              onPress={() => toggleExtra(side.id)}
+              onPress={() => setSelectedSide(prev => (prev === side.id ? null : side.id))}
             >
               <View
                 style={[
                   styles.optionCheckbox,
-                  selectedExtras.includes(side.id) && styles.checkboxSelected,
+                  selectedSide === side.id && styles.checkboxSelected,
                 ]}
               >
-                {selectedExtras.includes(side.id) && (
+                {selectedSide === side.id && (
                   <MaterialIcons name="check" size={16} color={COLORS.white} />
                 )}
               </View>
@@ -285,14 +335,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.md,
-  },
-  summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingBottom: SPACING.md,
-    borderBottomColor: COLORS.border,
-    borderBottomWidth: 1,
   },
   summaryLabel: {
     ...TYPOGRAPHY.body,
