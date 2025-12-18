@@ -1,9 +1,10 @@
 import { Button } from '@/components/Button';
+import { useCartStore } from '@/utils/cartStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React from 'react';
 import {
     FlatList,
     Image,
@@ -14,68 +15,47 @@ import {
     View,
 } from 'react-native';
 
-interface CartItem {
-  id: string;
-  name: string;
-  image: string;
-  price: number;
-  quantity: number;
-}
-
-const MOCK_CART_ITEMS: CartItem[] = [
-  {
-    id: '1',
-    name: 'Classic Burger',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-    price: 2500,
-    quantity: 2,
-  },
-  {
-    id: '2',
-    name: 'Margarita Pizza',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=300&fit=crop',
-    price: 3500,
-    quantity: 1,
-  },
-];
-
 export default function CartScreen() {
-  const [cartItems, setCartItems] = useState<CartItem[]>(MOCK_CART_ITEMS);
+  const { items: cartItems, updateQuantity, removeItem, clearCart, getTotal } = useCartStore();
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const totalPrice = getTotal();
 
   const handleUpdateQuantity = (itemId: string, quantity: number) => {
     if (quantity <= 0) {
-      setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+      removeItem(itemId);
     } else {
-      setCartItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, quantity } : item
-        )
-      );
+      updateQuantity(itemId, quantity);
     }
   };
 
   const handleRemoveItem = (itemId: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== itemId));
+    removeItem(itemId);
   };
 
   const handleClearCart = () => {
-    setCartItems([]);
+    clearCart();
   };
 
   const handleCheckout = () => {
     router.push('/(modal)/checkout');
   };
 
-  const renderCartItem = ({ item }: { item: CartItem }) => (
-    <View style={styles.cartItem}>
-      <Image source={{ uri: item.image }} style={styles.itemImage} />
-      
-      <View style={styles.itemDetails}>
-        <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>R{item.price.toLocaleString()}</Text>
-      </View>
+  const renderCartItem = ({ item }: { item: typeof cartItems[0] }) => {
+    const itemTotal = item.price + (item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0);
+    
+    return (
+      <View style={styles.cartItem}>
+        <Image source={{ uri: item.image }} style={styles.itemImage} />
+        
+        <View style={styles.itemDetails}>
+          <Text style={styles.itemName}>{item.name}</Text>
+          {item.extras && item.extras.length > 0 && (
+            <Text style={styles.itemExtras}>
+              {item.extras.map(e => e.name).join(', ')}
+            </Text>
+          )}
+          <Text style={styles.itemPrice}>R{itemTotal.toLocaleString()}</Text>
+        </View>
 
       <View style={styles.quantityControl}>
         <TouchableOpacity
@@ -100,7 +80,8 @@ export default function CartScreen() {
         <MaterialIcons name="delete" size={20} color={COLORS.error} />
       </TouchableOpacity>
     </View>
-  );
+    );
+  };
 
   const renderEmptyCart = () => (
     <View style={styles.emptyContainer}>
@@ -111,7 +92,6 @@ export default function CartScreen() {
         title="Start Shopping"
         onPress={() => router.push('/(tabs)/home')}
         fullWidth
-        style={styles.emptyButton}
       />
     </View>
   );
@@ -229,6 +209,11 @@ const styles = StyleSheet.create({
   itemName: {
     ...TYPOGRAPHY.bodyBold,
     color: COLORS.text,
+    marginBottom: SPACING.xs,
+  },
+  itemExtras: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textLight,
     marginBottom: SPACING.xs,
   },
   itemPrice: {

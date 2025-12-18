@@ -1,22 +1,20 @@
 import { CategoryTabs } from '@/components/CategoryTabs';
 import { FoodCard } from '@/components/FoodCard';
 import { SearchBar } from '@/components/SearchBar';
+import { useCartStore } from '@/utils/cartStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Dimensions,
   FlatList,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
-
-const { width } = Dimensions.get('window');
 
 // Mock data
 const CATEGORIES = [
@@ -81,8 +79,9 @@ const FOOD_ITEMS = [
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('1');
-  const [cartCount, setCartCount] = useState(0);
   const [userName] = useState('John'); // This would come from auth context in production
+  const { addItem, getItemCount } = useCartStore();
+  const cartCount = getItemCount();
 
   const filteredItems = FOOD_ITEMS.filter(
     (item) =>
@@ -98,8 +97,16 @@ export default function HomeScreen() {
   };
 
   const handleAddToCart = (itemId: string) => {
-    setCartCount((prev) => prev + 1);
-    // TODO: Add item to cart context/state
+    const item = FOOD_ITEMS.find(i => i.id === itemId);
+    if (item) {
+      addItem({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        image: item.image,
+      });
+    }
   };
 
   const renderHeader = () => {

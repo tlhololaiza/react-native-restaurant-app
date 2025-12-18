@@ -1,4 +1,5 @@
 import { Button } from '@/components/Button';
+import { useCartStore } from '@/utils/cartStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -55,6 +56,7 @@ const FOOD_DATA: Record<
 export default function ItemDetailsScreen() {
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
   const item = itemId ? FOOD_DATA[itemId] : FOOD_DATA['1'];
+  const { addItem } = useCartStore();
 
   const [quantity, setQuantity] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
@@ -86,15 +88,20 @@ export default function ItemDetailsScreen() {
   const totalPrice = (item.price + extrasTotal) * quantity;
 
   const handleAddToCart = () => {
-    // TODO: Add to cart logic
-    router.back();
-  };
+    const selectedExtrasData = selectedExtras
+      .map(id => [...EXTRAS, ...SIDES].find(e => e.id === id))
+      .filter((e): e is { id: string; name: string; price: number } => e !== undefined);
 
-  const handleEditExtras = () => {
-    router.push({
-      pathname: '/(modal)/edit-extras',
-      params: { itemId: item.id },
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity,
+      image: item.image,
+      extras: selectedExtrasData.length > 0 ? selectedExtrasData : undefined,
     });
+    
+    router.back();
   };
 
   return (
