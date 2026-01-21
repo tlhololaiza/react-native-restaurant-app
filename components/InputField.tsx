@@ -3,12 +3,12 @@ import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 
 interface InputFieldProps {

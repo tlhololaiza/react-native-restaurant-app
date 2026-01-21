@@ -1,22 +1,33 @@
-import { Button } from '@/components/Button';
-import { useCartStore } from '@/utils/cartStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React from 'react';
+import { Button } from "@/components/Button";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
 import {
-    FlatList,
-    Image,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import {
+  FlatList,
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function CartScreen() {
-  const { items: cartItems, updateQuantity, removeItem, clearCart, getTotal } = useCartStore();
+  const {
+    items: cartItems,
+    updateQuantity,
+    removeItem,
+    clearCart,
+    getTotal,
+  } = useCartStore();
 
   const totalPrice = getTotal();
 
@@ -37,57 +48,70 @@ export default function CartScreen() {
   };
 
   const handleCheckout = () => {
-    router.push('/(modal)/checkout');
+    router.push("/(modal)/checkout");
   };
 
-  const renderCartItem = ({ item }: { item: typeof cartItems[0] }) => {
-    const itemTotal = item.price + (item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0);
-    
+  const renderCartItem = ({ item }: { item: (typeof cartItems)[0] }) => {
+    const extrasTotal =
+      item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
+    const itemTotal = (item.price + extrasTotal) * item.quantity;
+
     return (
       <View style={styles.cartItem}>
         <Image source={{ uri: item.image }} style={styles.itemImage} />
-        
+
         <View style={styles.itemDetails}>
           <Text style={styles.itemName}>{item.name}</Text>
           {item.extras && item.extras.length > 0 && (
             <Text style={styles.itemExtras}>
-              {item.extras.map(e => e.name).join(', ')}
+              {item.extras.map((e) => e.name).join(", ")}
             </Text>
+          )}
+          {item.sides && (
+            <Text style={styles.itemExtras}>Side: {item.sides}</Text>
+          )}
+          {item.drink && (
+            <Text style={styles.itemExtras}>Drink: {item.drink}</Text>
           )}
           <Text style={styles.itemPrice}>R{itemTotal.toLocaleString()}</Text>
         </View>
 
-      <View style={styles.quantityControl}>
-        <TouchableOpacity
-          onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-          style={styles.quantityButton}
-        >
-          <MaterialIcons name="remove" size={18} color={COLORS.primary} />
-        </TouchableOpacity>
-        <Text style={styles.quantity}>{item.quantity}</Text>
-        <TouchableOpacity
-          onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-          style={styles.quantityButton}
-        >
-          <MaterialIcons name="add" size={18} color={COLORS.primary} />
-        </TouchableOpacity>
-      </View>
+        <View style={styles.quantityControl}>
+          <TouchableOpacity
+            onPress={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+            style={styles.quantityButton}
+          >
+            <MaterialIcons name="remove" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
+          <Text style={styles.quantity}>{item.quantity}</Text>
+          <TouchableOpacity
+            onPress={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+            style={styles.quantityButton}
+          >
+            <MaterialIcons name="add" size={18} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
 
         {/* Edit extras */}
         <TouchableOpacity
-          onPress={() => router.push({ pathname: '/(modal)/edit-extras', params: { itemId: item.id } })}
+          onPress={() =>
+            router.push({
+              pathname: "/(modal)/edit-extras",
+              params: { itemId: item.id },
+            })
+          }
           style={styles.removeButton}
         >
           <MaterialIcons name="edit" size={20} color={COLORS.primary} />
         </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => handleRemoveItem(item.id)}
-        style={styles.removeButton}
-      >
-        <MaterialIcons name="delete" size={20} color={COLORS.error} />
-      </TouchableOpacity>
-    </View>
+        <TouchableOpacity
+          onPress={() => handleRemoveItem(item.id)}
+          style={styles.removeButton}
+        >
+          <MaterialIcons name="delete" size={20} color={COLORS.error} />
+        </TouchableOpacity>
+      </View>
     );
   };
 
@@ -98,7 +122,7 @@ export default function CartScreen() {
       <Text style={styles.emptySubtitle}>Add some delicious food!</Text>
       <Button
         title="Start Shopping"
-        onPress={() => router.push('/(tabs)/home')}
+        onPress={() => router.push("/(tabs)/home")}
         fullWidth
       />
     </View>
@@ -130,10 +154,7 @@ export default function CartScreen() {
       />
 
       {/* Clear Cart Button */}
-      <TouchableOpacity
-        onPress={handleClearCart}
-        style={styles.clearButton}
-      >
+      <TouchableOpacity onPress={handleClearCart} style={styles.clearButton}>
         <MaterialIcons name="delete-sweep" size={20} color={COLORS.error} />
         <Text style={styles.clearButtonText}>Clear Cart</Text>
       </TouchableOpacity>
@@ -142,7 +163,9 @@ export default function CartScreen() {
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryValue}>R{totalPrice.toLocaleString()}</Text>
+          <Text style={styles.summaryValue}>
+            R{totalPrice.toLocaleString()}
+          </Text>
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Delivery Fee</Text>
@@ -151,7 +174,9 @@ export default function CartScreen() {
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
           <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>R{(totalPrice + 50).toLocaleString()}</Text>
+          <Text style={styles.totalValue}>
+            R{(totalPrice + 50).toLocaleString()}
+          </Text>
         </View>
       </View>
 
@@ -170,9 +195,9 @@ export default function CartScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     borderBottomColor: COLORS.border,
@@ -197,8 +222,8 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   cartItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     marginBottom: SPACING.lg,
@@ -227,11 +252,11 @@ const styles = StyleSheet.create({
   itemPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   quantityControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.gray100,
     borderRadius: RADIUS.md,
     paddingHorizontal: SPACING.sm,
@@ -246,15 +271,15 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     marginHorizontal: SPACING.sm,
     minWidth: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   removeButton: {
     padding: SPACING.sm,
   },
   clearButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     marginHorizontal: SPACING.lg,
@@ -277,8 +302,8 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: SPACING.md,
   },
   summaryLabel: {
@@ -301,7 +326,7 @@ const styles = StyleSheet.create({
   totalValue: {
     ...TYPOGRAPHY.h4,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   checkoutContainer: {
     paddingHorizontal: SPACING.lg,

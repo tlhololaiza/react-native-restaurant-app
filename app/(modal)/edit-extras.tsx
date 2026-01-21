@@ -4,27 +4,27 @@ import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const EXTRAS = [
-  { id: '1', name: 'Extra Cheese', price: 200 },
-  { id: '2', name: 'Bacon', price: 300 },
-  { id: '3', name: 'Mushrooms', price: 150 },
-  { id: '4', name: 'Onions', price: 100 },
+  { id: '1', name: 'Extra Cheese', price: 10 },
+    { id: '2', name: 'Bacon', price: 15 },
+    { id: '3', name: 'Mushrooms', price: 20 },
+    { id: '4', name: 'Onions', price: 5 },
 ];
 
 const SIDES = [
-  { id: 's1', name: 'French Fries', price: 500 },
-  { id: 's2', name: 'Coleslaw', price: 300 },
-  { id: 's3', name: 'Jalapeño Poppers', price: 400 },
+  { id: 's1', name: 'French Fries', price: 40 },
+    { id: 's2', name: 'Coleslaw', price: 20 },
+    { id: 's3', name: 'Jalapeño Poppers', price: 40 },
 ];
 
 const REMOVE_OPTIONS = [

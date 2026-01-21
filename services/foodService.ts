@@ -1,10 +1,10 @@
 import { db } from '@/services/firebase';
 import {
-    addDoc,
-    collection,
-    getDocs,
-    QueryDocumentSnapshot,
-    Timestamp,
+  addDoc,
+  collection,
+  getDocs,
+  QueryDocumentSnapshot,
+  Timestamp,
 } from 'firebase/firestore';
 
 export type FoodCategory =

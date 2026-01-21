@@ -3,10 +3,10 @@ import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 interface SearchBarProps {

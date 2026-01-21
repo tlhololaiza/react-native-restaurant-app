@@ -1,45 +1,69 @@
-import { Button } from '@/components/Button';
-import { InputField } from '@/components/InputField';
-import { logoutUser, updateUserProfile } from '@/services/firebase';
-import { useAuthStore } from '@/utils/authStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { Button } from "@/components/Button";
+import { InputField } from "@/components/InputField";
+import { logoutUser, updateUserProfile } from "@/services/firebase";
+import { useAuthStore } from "@/utils/authStore";
+import { COLORS } from "@/utils/colors";
+import {
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
 export default function ProfileScreen() {
   const { user, userProfile, setUser, setUserProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
-    name: userProfile?.name || 'John',
-    surname: userProfile?.surname || 'Doe',
-    email: userProfile?.email || 'john.doe@example.com',
-    phone: userProfile?.phone || '+234 800 000 0000',
-    address: userProfile?.address || '123 Street Name, City',
-    cardNumber: userProfile?.cardNumber || '1234 5678 9012 3456',
-    cardExpiry: userProfile?.cardExpiry || '12/25',
-    cardCVC: userProfile?.cardCVV || '123',
+    name: userProfile?.name || "John",
+    surname: userProfile?.surname || "Doe",
+    email: userProfile?.email || "john.doe@example.com",
+    phone: userProfile?.phone || "+234 800 000 0000",
+    address: userProfile?.address || "123 Street Name, City",
+    cardNumber: userProfile?.cardNumber || "1234 5678 9012 3456",
+    cardExpiry: userProfile?.cardExpiry || "12/25",
+    cardCVC: userProfile?.cardCVV || "123",
   });
 
   const [editData, setEditData] = useState(profileData);
+
+  // Sync local state when store profile updates
+  useEffect(() => {
+    if (!userProfile) return;
+    const next = {
+      name: userProfile.name,
+      surname: userProfile.surname,
+      email: userProfile.email,
+      phone: userProfile.phone,
+      address: userProfile.address,
+      cardNumber: userProfile.cardNumber,
+      cardExpiry: userProfile.cardExpiry || "",
+      cardCVC: userProfile.cardCVV || "",
+    };
+    setProfileData(next);
+    setEditData(next);
+  }, [userProfile]);
 
   // Check if user is authenticated
   useFocusEffect(
     useCallback(() => {
       if (!user) {
-        router.replace('/(auth)/login');
+        router.replace("/(auth)/login");
       }
-    }, [user])
+    }, [user]),
   );
 
   const updateField = (field: string, value: string) => {
@@ -48,8 +72,9 @@ export default function ProfileScreen() {
 
   const handleSaveChanges = async () => {
     if (!user) return;
-    
+
     setLoading(true);
+    setError(null);
     try {
       await updateUserProfile(user.uid, {
         name: editData.name,
@@ -60,21 +85,38 @@ export default function ProfileScreen() {
         cardExpiry: editData.cardExpiry,
         cardCVV: editData.cardCVC,
       });
-      
+
       setProfileData(editData);
-      setUserProfile({
-        ...userProfile!,
-        name: editData.name,
-        surname: editData.surname,
-        phone: editData.phone,
-        address: editData.address,
-        cardNumber: editData.cardNumber,
-        cardExpiry: editData.cardExpiry,
-        cardCVV: editData.cardCVC,
-      });
+      setUserProfile(
+        userProfile
+          ? {
+              ...userProfile,
+              name: editData.name,
+              surname: editData.surname,
+              phone: editData.phone,
+              address: editData.address,
+              cardNumber: editData.cardNumber,
+              cardExpiry: editData.cardExpiry,
+              cardCVV: editData.cardCVC,
+            }
+          : {
+              uid: user.uid,
+              email: editData.email,
+              name: editData.name,
+              surname: editData.surname,
+              phone: editData.phone,
+              address: editData.address,
+              cardNumber: editData.cardNumber,
+              cardExpiry: editData.cardExpiry,
+              cardCVV: editData.cardCVC,
+              createdAt: Date.now(),
+              updatedAt: Date.now(),
+            },
+      );
       setIsEditing(false);
     } catch (error) {
-      console.error('Error updating profile:', error);
+      console.error("Error updating profile:", error);
+      setError("Could not save changes. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -91,15 +133,13 @@ export default function ProfileScreen() {
       await logoutUser();
       setUser(null);
       setUserProfile(null);
-      router.replace('/(auth)/login');
+      router.replace("/(auth)/login");
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     } finally {
       setLoading(false);
     }
   };
-
-  
 
   const ProfileField = ({
     label,
@@ -141,10 +181,12 @@ export default function ProfileScreen() {
             <MaterialIcons name="person" size={50} color={COLORS.primary} />
           </View>
           <Text style={styles.profileName}>
-            {isEditing ? editData.name : profileData.name}{' '}
+            {isEditing ? editData.name : profileData.name}{" "}
             {isEditing ? editData.surname : profileData.surname}
           </Text>
         </View>
+
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
         {!isEditing ? (
           <>
@@ -207,19 +249,39 @@ export default function ProfileScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Preferences</Text>
               <TouchableOpacity style={styles.preferenceItem}>
-                <MaterialIcons name="notifications" size={20} color={COLORS.primary} />
+                <MaterialIcons
+                  name="notifications"
+                  size={20}
+                  color={COLORS.primary}
+                />
                 <Text style={styles.preferenceText}>Notifications</Text>
-                <MaterialIcons name="chevron-right" size={20} color={COLORS.gray400} />
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={COLORS.gray400}
+                />
               </TouchableOpacity>
               <TouchableOpacity style={styles.preferenceItem}>
-                <MaterialIcons name="security" size={20} color={COLORS.primary} />
+                <MaterialIcons
+                  name="security"
+                  size={20}
+                  color={COLORS.primary}
+                />
                 <Text style={styles.preferenceText}>Security</Text>
-                <MaterialIcons name="chevron-right" size={20} color={COLORS.gray400} />
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={COLORS.gray400}
+                />
               </TouchableOpacity>
               <TouchableOpacity style={styles.preferenceItem}>
                 <MaterialIcons name="help" size={20} color={COLORS.primary} />
                 <Text style={styles.preferenceText}>Help & Support</Text>
-                <MaterialIcons name="chevron-right" size={20} color={COLORS.gray400} />
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={COLORS.gray400}
+                />
               </TouchableOpacity>
             </View>
 
@@ -241,13 +303,13 @@ export default function ProfileScreen() {
                 <InputField
                   label="First Name"
                   value={editData.name}
-                  onChangeText={(value) => updateField('name', value)}
+                  onChangeText={(value) => updateField("name", value)}
                   style={styles.halfInput}
                 />
                 <InputField
                   label="Last Name"
                   value={editData.surname}
-                  onChangeText={(value) => updateField('surname', value)}
+                  onChangeText={(value) => updateField("surname", value)}
                   style={styles.halfInput}
                 />
               </View>
@@ -255,21 +317,21 @@ export default function ProfileScreen() {
               <InputField
                 label="Email"
                 value={editData.email}
-                onChangeText={(value) => updateField('email', value)}
+                onChangeText={(value) => updateField("email", value)}
                 keyboardType="email-address"
               />
 
               <InputField
                 label="Phone"
                 value={editData.phone}
-                onChangeText={(value) => updateField('phone', value)}
+                onChangeText={(value) => updateField("phone", value)}
                 keyboardType="phone-pad"
               />
 
               <InputField
                 label="Address"
                 value={editData.address}
-                onChangeText={(value) => updateField('address', value)}
+                onChangeText={(value) => updateField("address", value)}
               />
 
               <Text style={styles.sectionTitle}>Card Information</Text>
@@ -277,7 +339,7 @@ export default function ProfileScreen() {
               <InputField
                 label="Card Number"
                 value={editData.cardNumber}
-                onChangeText={(value) => updateField('cardNumber', value)}
+                onChangeText={(value) => updateField("cardNumber", value)}
                 keyboardType="numeric"
               />
 
@@ -285,14 +347,14 @@ export default function ProfileScreen() {
                 <InputField
                   label="Expiry"
                   value={editData.cardExpiry}
-                  onChangeText={(value) => updateField('cardExpiry', value)}
+                  onChangeText={(value) => updateField("cardExpiry", value)}
                   placeholder="MM/YY"
                   style={styles.halfInput}
                 />
                 <InputField
                   label="CVC"
                   value={editData.cardCVC}
-                  onChangeText={(value) => updateField('cardCVC', value)}
+                  onChangeText={(value) => updateField("cardCVC", value)}
                   keyboardType="numeric"
                   style={styles.halfInput}
                 />
@@ -329,9 +391,9 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: SPACING.lg,
     borderBottomColor: COLORS.border,
     borderBottomWidth: 1,
@@ -342,7 +404,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   avatarSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: SPACING.xxxl,
   },
   avatar: {
@@ -357,6 +419,12 @@ const styles = StyleSheet.create({
   profileName: {
     ...TYPOGRAPHY.h3,
     color: COLORS.text,
+  },
+  errorText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.error,
+    textAlign: "center",
+    marginBottom: SPACING.md,
   },
   section: {
     marginBottom: SPACING.xxxl,
@@ -374,8 +442,8 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
   fieldLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: SPACING.sm,
     gap: SPACING.sm,
   },
@@ -403,12 +471,12 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   cardDetails: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   cardLabel: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255, 255, 255, 0.7)',
+    color: "rgba(255, 255, 255, 0.7)",
     marginBottom: SPACING.xs,
   },
   cardValue: {
@@ -416,8 +484,8 @@ const styles = StyleSheet.create({
     color: COLORS.white,
   },
   preferenceItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -434,7 +502,7 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: SPACING.md,
   },
   halfInput: {

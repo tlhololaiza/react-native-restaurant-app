@@ -1,12 +1,18 @@
-import { Button } from '@/components/Button';
-import { InputField } from '@/components/InputField';
-import { getUserProfile, registerUser } from '@/services/firebase';
-import { useAuthStore } from '@/utils/authStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { Button } from "@/components/Button";
+import { InputField } from "@/components/InputField";
+import { getUserProfile, registerUser } from "@/services/firebase";
+import { useAuthStore } from "@/utils/authStore";
+import { COLORS } from "@/utils/colors";
+import {
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -17,22 +23,29 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function RegisterScreen() {
   const [formData, setFormData] = useState({
-    name: '',
-    surname: '',
-    email: '',
-    password: '',
-    address: '',
-    phone: '',
-    cardNumber: '',
+    name: "",
+    surname: "",
+    email: "",
+    password: "",
+    address: "",
+    phone: "",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCVV: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { setUser, setUserProfile, setLoading: setStoreLoading, setError: setStoreError } = useAuthStore();
+  const {
+    setUser,
+    setUserProfile,
+    setLoading: setStoreLoading,
+    setError: setStoreError,
+  } = useAuthStore();
 
   const updateForm = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -41,17 +54,32 @@ export default function RegisterScreen() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.name) newErrors.name = 'First name is required';
-    if (!formData.surname) newErrors.surname = 'Last name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.name) newErrors.name = "First name is required";
+    if (!formData.surname) newErrors.surname = "Last name is required";
+    if (!formData.email) newErrors.email = "Email is required";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      newErrors.email = 'Invalid email';
-    if (!formData.password) newErrors.password = 'Password is required';
+      newErrors.email = "Invalid email";
+    if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
-      newErrors.password = 'Password must be at least 6 characters';
-    if (!formData.address) newErrors.address = 'Address is required';
-    if (!formData.phone) newErrors.phone = 'Phone is required';
-    if (!formData.cardNumber) newErrors.cardNumber = 'Card number is required';
+      newErrors.password = "Password must be at least 6 characters";
+    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.phone) newErrors.phone = "Phone is required";
+    const numericCard = formData.cardNumber.replace(/\s+/g, "");
+    if (
+      formData.cardNumber &&
+      (numericCard.length < 12 || numericCard.length > 19)
+    ) {
+      newErrors.cardNumber = "Card number looks invalid";
+    }
+    if (
+      formData.cardExpiry &&
+      !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(formData.cardExpiry)
+    ) {
+      newErrors.cardExpiry = "Use MM/YY format";
+    }
+    if (formData.cardCVV && !/^\d{3,4}$/.test(formData.cardCVV)) {
+      newErrors.cardCVV = "CVV should be 3-4 digits";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -69,6 +97,8 @@ export default function RegisterScreen() {
         phone: formData.phone,
         address: formData.address,
         cardNumber: formData.cardNumber,
+        cardExpiry: formData.cardExpiry || undefined,
+        cardCVV: formData.cardCVV || undefined,
       });
 
       setUser(user);
@@ -79,9 +109,10 @@ export default function RegisterScreen() {
         setUserProfile(profile);
       }
 
-      router.replace('/(tabs)/home');
+      router.replace("/(tabs)/home");
     } catch (error: any) {
-      const errorMessage = error.message || 'Registration failed. Please try again.';
+      const errorMessage =
+        error.message || "Registration failed. Please try again.";
       setErrors({ general: errorMessage });
       setStoreError(errorMessage);
     } finally {
@@ -93,7 +124,7 @@ export default function RegisterScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <ScrollView
@@ -116,13 +147,15 @@ export default function RegisterScreen() {
           <View style={styles.logoSection}>
             <View style={styles.logoCircle}>
               <Image
-                source={require('../../assets/logo/logo.jpg')}
+                source={require("../../assets/logo/logo.jpg")}
                 style={styles.logoImage}
                 resizeMode="cover"
               />
             </View>
             <Text style={styles.welcomeText}>Join FoodHub</Text>
-            <Text style={styles.subtitle}>Create your account for delicious meals</Text>
+            <Text style={styles.subtitle}>
+              Create your account for delicious meals
+            </Text>
             <View style={styles.decorativeLine} />
           </View>
 
@@ -133,7 +166,7 @@ export default function RegisterScreen() {
                 label="First Name"
                 placeholder="John"
                 value={formData.name}
-                onChangeText={(value) => updateForm('name', value)}
+                onChangeText={(value) => updateForm("name", value)}
                 error={errors.name}
                 style={styles.halfInput}
               />
@@ -141,7 +174,7 @@ export default function RegisterScreen() {
                 label="Last Name"
                 placeholder="Doe"
                 value={formData.surname}
-                onChangeText={(value) => updateForm('surname', value)}
+                onChangeText={(value) => updateForm("surname", value)}
                 error={errors.surname}
                 style={styles.halfInput}
               />
@@ -151,7 +184,7 @@ export default function RegisterScreen() {
               label="Email Address"
               placeholder="john.doe@example.com"
               value={formData.email}
-              onChangeText={(value) => updateForm('email', value)}
+              onChangeText={(value) => updateForm("email", value)}
               keyboardType="email-address"
               icon="mail"
               error={errors.email}
@@ -161,16 +194,18 @@ export default function RegisterScreen() {
               label="Password"
               placeholder="Create a strong password"
               value={formData.password}
-              onChangeText={(value) => updateForm('password', value)}
+              onChangeText={(value) => updateForm("password", value)}
               secureTextEntry
               error={errors.password}
             />
+
+            <Text style={styles.sectionTitle}>Contact & Delivery</Text>
 
             <InputField
               label="Delivery Address"
               placeholder="123 Street Name, City"
               value={formData.address}
-              onChangeText={(value) => updateForm('address', value)}
+              onChangeText={(value) => updateForm("address", value)}
               icon="location-on"
               error={errors.address}
             />
@@ -179,25 +214,50 @@ export default function RegisterScreen() {
               label="Phone Number"
               placeholder="+234 800 000 0000"
               value={formData.phone}
-              onChangeText={(value) => updateForm('phone', value)}
+              onChangeText={(value) => updateForm("phone", value)}
               keyboardType="phone-pad"
               icon="phone"
               error={errors.phone}
             />
 
+            <Text style={styles.sectionTitle}>Payment (optional)</Text>
+
             <InputField
               label="Card Number"
               placeholder="1234 5678 9012 3456"
               value={formData.cardNumber}
-              onChangeText={(value) => updateForm('cardNumber', value)}
+              onChangeText={(value) => updateForm("cardNumber", value)}
               keyboardType="numeric"
               icon="credit-card"
               error={errors.cardNumber}
             />
 
+            <View style={styles.row}>
+              <InputField
+                label="Expiry"
+                placeholder="MM/YY"
+                value={formData.cardExpiry}
+                onChangeText={(value) => updateForm("cardExpiry", value)}
+                keyboardType="numeric"
+                error={errors.cardExpiry}
+                style={styles.halfInput}
+              />
+              <InputField
+                label="CVV"
+                placeholder="123"
+                value={formData.cardCVV}
+                onChangeText={(value) => updateForm("cardCVV", value)}
+                keyboardType="numeric"
+                error={errors.cardCVV}
+                style={styles.halfInput}
+              />
+            </View>
+
             {/* General Error */}
             {errors.general && (
-              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>{errors.general}</Text>
+              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>
+                {errors.general}
+              </Text>
             )}
           </View>
 
@@ -213,7 +273,7 @@ export default function RegisterScreen() {
           {/* Login Link */}
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>Already have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+            <TouchableOpacity onPress={() => router.push("/(auth)/login")}>
               <Text style={styles.loginLink}>Login</Text>
             </TouchableOpacity>
           </View>
@@ -234,9 +294,9 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.xl,
   },
   headerTitle: {
@@ -244,7 +304,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   logoSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: SPACING.xl,
     marginTop: SPACING.md,
   },
@@ -255,25 +315,25 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...commonStyles.centered,
     marginBottom: SPACING.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...SHADOWS.md,
     borderWidth: 3,
     borderColor: COLORS.primary,
   },
   logoImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   welcomeText: {
     ...TYPOGRAPHY.h3,
     color: COLORS.text,
     marginBottom: SPACING.xs,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
     ...TYPOGRAPHY.body,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
   },
   decorativeLine: {
     width: 60,
@@ -286,16 +346,22 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: SPACING.md,
   },
   halfInput: {
     flex: 1,
     marginBottom: SPACING.lg,
   },
+  sectionTitle: {
+    ...TYPOGRAPHY.captionBold,
+    color: COLORS.textLight,
+    marginBottom: SPACING.sm,
+    marginTop: SPACING.md,
+  },
   loginContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: SPACING.lg,
   },
   loginText: {

@@ -2,7 +2,6 @@ import { COLORS } from '@/utils/colors';
 import { SPACING } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
 
 export default function TabsLayout() {
   return (
