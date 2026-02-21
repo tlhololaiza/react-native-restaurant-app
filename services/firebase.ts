@@ -1,22 +1,29 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import {
-    createUserWithEmailAndPassword,
-    getAuth,
-    signInWithEmailAndPassword,
-    signOut,
-    updateProfile,
-    User,
-} from 'firebase/auth';
-import { doc, getDoc, getFirestore, setDoc, updateDoc } from 'firebase/firestore';
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  User,
+} from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  getDocFromCache,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: 'AIzaSyBRDKvW53eWpWFypuip5fQ6wWCtF_tb_pM',
-  authDomain: 'foodhub-fe8b2.firebaseapp.com',
-  projectId: 'foodhub-fe8b2',
-  storageBucket: 'foodhub-fe8b2.firebasestorage.app',
-  messagingSenderId: '655381628782',
-  appId: '1:655381628782:web:0c211d4ed950ea83d2e37f',
+  apiKey: "AIzaSyBRDKvW53eWpWFypuip5fQ6wWCtF_tb_pM",
+  authDomain: "foodhub-fe8b2.firebaseapp.com",
+  projectId: "foodhub-fe8b2",
+  storageBucket: "foodhub-fe8b2.firebasestorage.app",
+  messagingSenderId: "655381628782",
+  appId: "1:655381628782:web:0c211d4ed950ea83d2e37f",
 };
 
 // Initialize Firebase
@@ -44,10 +51,14 @@ export interface UserProfile {
 export const registerUser = async (
   email: string,
   password: string,
-  userData: Omit<UserProfile, 'uid' | 'createdAt' | 'updatedAt' | 'email'>
+  userData: Omit<UserProfile, "uid" | "createdAt" | "updatedAt" | "email">,
 ): Promise<User> => {
   try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     const user = userCredential.user;
 
     // Update Firebase auth profile
@@ -64,7 +75,7 @@ export const registerUser = async (
       updatedAt: Date.now(),
     };
 
-    await setDoc(doc(db, 'users', user.uid), userProfile);
+    await setDoc(doc(db, "users", user.uid), userProfile);
 
     return user;
   } catch (error: any) {
@@ -73,9 +84,16 @@ export const registerUser = async (
 };
 
 // Login user with email and password
-export const loginUser = async (email: string, password: string): Promise<User> => {
+export const loginUser = async (
+  email: string,
+  password: string,
+): Promise<User> => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userCredential = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
     return userCredential.user;
   } catch (error: any) {
     throw new Error(error.message);
@@ -92,12 +110,30 @@ export const logoutUser = async (): Promise<void> => {
 };
 
 // Get user profile from Firestore
-export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+export const getUserProfile = async (
+  uid: string,
+): Promise<UserProfile | null> => {
   try {
-    const docRef = doc(db, 'users', uid);
+    const docRef = doc(db, "users", uid);
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? (docSnap.data() as UserProfile) : null;
   } catch (error: any) {
+    // If Firestore thinks the client is offline, try to read from cache as a fallback.
+    if (
+      error &&
+      typeof error.message === "string" &&
+      error.message.toLowerCase().includes("client is offline")
+    ) {
+      try {
+        const docRef = doc(db, "users", uid);
+        const cachedSnap = await getDocFromCache(docRef);
+        return cachedSnap.exists() ? (cachedSnap.data() as UserProfile) : null;
+      } catch {
+        // Can't read from cache (likely unsupported in this environment) — return null quietly.
+        return null;
+      }
+    }
+
     throw new Error(error.message);
   }
 };
@@ -105,10 +141,10 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
 // Update user profile
 export const updateUserProfile = async (
   uid: string,
-  updates: Partial<UserProfile>
+  updates: Partial<UserProfile>,
 ): Promise<void> => {
   try {
-    const docRef = doc(db, 'users', uid);
+    const docRef = doc(db, "users", uid);
     await updateDoc(docRef, {
       ...updates,
       updatedAt: Date.now(),
