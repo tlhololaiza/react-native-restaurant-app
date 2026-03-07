@@ -1,5 +1,4 @@
-import { Stack } from 'expo-router';
-import React from 'react';
+import { Stack } from "expo-router";
 
 export default function ModalLayout() {
   return (
@@ -7,7 +6,7 @@ export default function ModalLayout() {
       screenOptions={{
         headerShown: false,
         animationEnabled: true,
-        presentation: 'modal',
+        presentation: "modal",
       }}
     >
       <Stack.Screen

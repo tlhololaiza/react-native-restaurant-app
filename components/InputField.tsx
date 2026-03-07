@@ -1,15 +1,15 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ViewStyle,
-} from 'react-native';
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 
 interface InputFieldProps {
   label?: string;
@@ -17,7 +17,7 @@ interface InputFieldProps {
   value: string;
   onChangeText: (text: string) => void;
   secureTextEntry?: boolean;
-  keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
+  keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
   icon?: string;
   error?: string;
   editable?: boolean;
@@ -33,7 +33,7 @@ export const InputField: React.FC<InputFieldProps> = ({
   value,
   onChangeText,
   secureTextEntry = false,
-  keyboardType = 'default',
+  keyboardType = "default",
   icon,
   error,
   editable = true,
@@ -81,7 +81,7 @@ export const InputField: React.FC<InputFieldProps> = ({
         {secureTextEntry && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             <MaterialIcons
-              name={showPassword ? 'visibility-off' : 'visibility'}
+              name={showPassword ? "visibility-off" : "visibility"}
               size={20}
               color={COLORS.gray500}
               style={styles.icon}
@@ -114,8 +114,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.sm,
   },
   inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderColor: COLORS.border,
     borderWidth: 1,

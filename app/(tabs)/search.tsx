@@ -1,32 +1,26 @@
-import { CategoryTabs } from '@/components/CategoryTabs';
-import { FoodCard } from '@/components/FoodCard';
-import { SearchBar } from '@/components/SearchBar';
-import { getFoodItems } from '@/services/foodService';
-import { COLORS } from '@/utils/colors';
-import { initializeFirestoreData } from '@/utils/seedService';
-import { commonStyles, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import {
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import { CategoryTabs } from "@/components/CategoryTabs";
+import { FoodCard } from "@/components/FoodCard";
+import { SearchBar } from "@/components/SearchBar";
+import { getFoodItems } from "@/services/foodService";
+import { COLORS } from "@/utils/colors";
+import { initializeFirestoreData } from "@/utils/seedService";
+import { commonStyles, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
+import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 const CATEGORIES = [
-  { id: 'burgers', name: 'Burgers' },
-  { id: 'pizza', name: 'Pizza' },
-  { id: 'chicken', name: 'Chicken' },
-  { id: 'desserts', name: 'Desserts' },
-  { id: 'drinks', name: 'Drinks' },
+  { id: "burgers", name: "Burgers" },
+  { id: "pizza", name: "Pizza" },
+  { id: "chicken", name: "Chicken" },
+  { id: "desserts", name: "Desserts" },
+  { id: "drinks", name: "Drinks" },
 ];
 
 export default function SearchScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("");
   const [foodItems, setFoodItems] = useState<any[]>([]);
 
   useEffect(() => {
@@ -34,10 +28,10 @@ export default function SearchScreen() {
       try {
         await initializeFirestoreData();
         const items = await getFoodItems();
-        console.log('SearchScreen: Loaded items:', items.length);
+        console.log("SearchScreen: Loaded items:", items.length);
         setFoodItems(items);
       } catch (error) {
-        console.error('SearchScreen: Error loading food items:', error);
+        console.error("SearchScreen: Error loading food items:", error);
       }
     };
 
@@ -45,14 +39,16 @@ export default function SearchScreen() {
   }, []);
 
   const filteredItems = foodItems.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = item.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesCategory = !activeCategory || item.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
 
   const handleFoodPress = (id: string) => {
     router.push({
-      pathname: '/(modal)/item-details',
+      pathname: "/(modal)/item-details",
       params: { itemId: id },
     });
   };
@@ -86,7 +82,7 @@ export default function SearchScreen() {
           categories={CATEGORIES}
           activeCategory={activeCategory}
           onCategoryChange={(id) =>
-            setActiveCategory(activeCategory === id ? '' : id)
+            setActiveCategory(activeCategory === id ? "" : id)
           }
         />
       </View>
@@ -97,7 +93,9 @@ export default function SearchScreen() {
           <View style={styles.resultsContent}>
             <MaterialIcons name="done-all" size={18} color={COLORS.primary} />
             <Text style={styles.resultsText}>
-              Found <Text style={styles.resultsBold}>{filteredItems.length}</Text> delicious items
+              Found{" "}
+              <Text style={styles.resultsBold}>{filteredItems.length}</Text>{" "}
+              delicious items
             </Text>
           </View>
         </View>
@@ -158,7 +156,7 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     ...TYPOGRAPHY.body,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "rgba(255, 255, 255, 0.8)",
     marginTop: SPACING.xs,
   },
   categoriesSection: {
@@ -172,8 +170,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   categoryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: SPACING.sm,
   },
   resultsHeader: {
@@ -182,8 +180,8 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   resultsContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: SPACING.sm,
   },
   resultsText: {
@@ -191,14 +189,14 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   resultsBold: {
-    fontWeight: '700',
+    fontWeight: "700",
     color: COLORS.primary,
   },
   listContent: {
     paddingBottom: SPACING.xxxl,
   },
   columnWrapper: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingHorizontal: SPACING.lg,
     marginBottom: SPACING.lg,
   },

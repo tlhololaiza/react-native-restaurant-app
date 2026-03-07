@@ -1,19 +1,25 @@
-import { Button } from '@/components/Button';
-import { useCartStore } from '@/utils/cartStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import { Button } from "@/components/Button";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Mock item data
 const FOOD_DATA: Record<
@@ -28,23 +34,25 @@ const FOOD_DATA: Record<
     reviews: number;
   }
 > = {
-  '1': {
-    id: '1',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop',
-    name: 'Classic Burger',
+  "1": {
+    id: "1",
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop",
+    name: "Classic Burger",
     price: 2500,
     description:
-      'A delicious classic burger with fresh beef, crispy lettuce, tomato, and our signature sauce on a toasted bun.',
+      "A delicious classic burger with fresh beef, crispy lettuce, tomato, and our signature sauce on a toasted bun.",
     rating: 4.5,
     reviews: 234,
   },
-  '2': {
-    id: '2',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=500&fit=crop',
-    name: 'Margarita Pizza',
+  "2": {
+    id: "2",
+    image:
+      "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=500&fit=crop",
+    name: "Margarita Pizza",
     price: 3500,
     description:
-      'Traditional Italian pizza with fresh mozzarella, basil, and tomato sauce on a thin crispy crust.',
+      "Traditional Italian pizza with fresh mozzarella, basil, and tomato sauce on a thin crispy crust.",
     rating: 4.7,
     reviews: 156,
   },
@@ -52,28 +60,30 @@ const FOOD_DATA: Record<
 
 export default function ItemDetailsScreen() {
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
-  const item = itemId ? FOOD_DATA[itemId] : FOOD_DATA['1'];
+  const item = itemId ? FOOD_DATA[itemId] : FOOD_DATA["1"];
   const { addItem } = useCartStore();
 
   const [quantity, setQuantity] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
 
   const EXTRAS = [
-    { id: '1', name: 'Extra Cheese', price: 200 },
-    { id: '2', name: 'Bacon', price: 300 },
-    { id: '3', name: 'Mushrooms', price: 150 },
-    { id: '4', name: 'Onions', price: 100 },
+    { id: "1", name: "Extra Cheese", price: 200 },
+    { id: "2", name: "Bacon", price: 300 },
+    { id: "3", name: "Mushrooms", price: 150 },
+    { id: "4", name: "Onions", price: 100 },
   ];
 
   const SIDES = [
-    { id: 's1', name: 'French Fries', price: 500 },
-    { id: 's2', name: 'Coleslaw', price: 300 },
-    { id: 's3', name: 'Jalapeño Poppers', price: 400 },
+    { id: "s1", name: "French Fries", price: 500 },
+    { id: "s2", name: "Coleslaw", price: 300 },
+    { id: "s3", name: "Jalapeño Poppers", price: 400 },
   ];
 
   const toggleExtra = (extraId: string) => {
     setSelectedExtras((prev) =>
-      prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]
+      prev.includes(extraId)
+        ? prev.filter((id) => id !== extraId)
+        : [...prev, extraId],
     );
   };
 
@@ -86,8 +96,11 @@ export default function ItemDetailsScreen() {
 
   const handleAddToCart = () => {
     const selectedExtrasData = selectedExtras
-      .map(id => [...EXTRAS, ...SIDES].find(e => e.id === id))
-      .filter((e): e is { id: string; name: string; price: number } => e !== undefined);
+      .map((id) => [...EXTRAS, ...SIDES].find((e) => e.id === id))
+      .filter(
+        (e): e is { id: string; name: string; price: number } =>
+          e !== undefined,
+      );
 
     addItem({
       id: item.id,
@@ -97,7 +110,7 @@ export default function ItemDetailsScreen() {
       image: item.image,
       extras: selectedExtrasData.length > 0 ? selectedExtrasData : undefined,
     });
-    
+
     router.back();
   };
 
@@ -174,7 +187,11 @@ export default function ItemDetailsScreen() {
               >
                 <View style={styles.optionCheckbox}>
                   {selectedExtras.includes(extra.id) && (
-                    <MaterialIcons name="check" size={16} color={COLORS.white} />
+                    <MaterialIcons
+                      name="check"
+                      size={16}
+                      color={COLORS.white}
+                    />
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
@@ -196,7 +213,11 @@ export default function ItemDetailsScreen() {
               >
                 <View style={styles.optionCheckbox}>
                   {selectedExtras.includes(side.id) && (
-                    <MaterialIcons name="check" size={16} color={COLORS.white} />
+                    <MaterialIcons
+                      name="check"
+                      size={16}
+                      color={COLORS.white}
+                    />
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
@@ -218,7 +239,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -229,7 +250,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -240,7 +261,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -271,9 +292,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomColor: COLORS.border,
@@ -287,26 +308,26 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   imageContainer: {
-    width: '100%',
+    width: "100%",
     height: 280,
     backgroundColor: COLORS.white,
-    position: 'relative',
+    position: "relative",
     marginBottom: SPACING.lg,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   ratingBadge: {
-    position: 'absolute',
+    position: "absolute",
     bottom: SPACING.lg,
     right: SPACING.lg,
     backgroundColor: COLORS.gray900,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   ratingText: {
@@ -339,9 +360,9 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     marginBottom: SPACING.lg,
     ...SHADOWS.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   priceLabel: {
     ...TYPOGRAPHY.subtitle,
@@ -350,7 +371,7 @@ const styles = StyleSheet.create({
   price: {
     ...TYPOGRAPHY.h3,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   quantitySection: {
     marginBottom: SPACING.xl,
@@ -361,8 +382,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   quantityControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -376,14 +397,14 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.h4,
     color: COLORS.text,
     minWidth: 40,
-    textAlign: 'center',
+    textAlign: "center",
   },
   optionsSection: {
     marginBottom: SPACING.xl,
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -407,7 +428,7 @@ const styles = StyleSheet.create({
   optionPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   suggestedSection: {
     marginBottom: SPACING.xl,
@@ -418,7 +439,7 @@ const styles = StyleSheet.create({
   },
   suggestedCard: {
     marginRight: SPACING.lg,
-    alignItems: 'center',
+    alignItems: "center",
   },
   suggestedImage: {
     width: 120,
@@ -433,7 +454,7 @@ const styles = StyleSheet.create({
   suggestedPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   bottomSection: {
     paddingHorizontal: SPACING.lg,

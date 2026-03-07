@@ -1,12 +1,18 @@
-import { Button } from '@/components/Button';
-import { InputField } from '@/components/InputField';
-import { getUserProfile, loginUser } from '@/services/firebase';
-import { useAuthStore } from '@/utils/authStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { Button } from "@/components/Button";
+import { InputField } from "@/components/InputField";
+import { getUserProfile, loginUser } from "@/services/firebase";
+import { useAuthStore } from "@/utils/authStore";
+import { COLORS } from "@/utils/colors";
+import {
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -17,28 +23,37 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
-  const { setUser, setUserProfile, setLoading: setStoreLoading, setError: setStoreError } = useAuthStore();
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    general?: string;
+  }>({});
+  const {
+    setUser,
+    setUserProfile,
+    setLoading: setStoreLoading,
+    setError: setStoreError,
+  } = useAuthStore();
 
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
     if (!email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     setErrors(newErrors);
@@ -60,9 +75,9 @@ export default function LoginScreen() {
         setUserProfile(profile);
       }
 
-      router.replace('/(tabs)/home');
+      router.replace("/(tabs)/home");
     } catch (error: any) {
-      const errorMessage = error.message || 'Login failed. Please try again.';
+      const errorMessage = error.message || "Login failed. Please try again.";
       setErrors({ general: errorMessage });
       setStoreError(errorMessage);
     } finally {
@@ -74,7 +89,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
       >
         <ScrollView
@@ -97,7 +112,7 @@ export default function LoginScreen() {
           <View style={styles.logoSection}>
             <View style={styles.logoCircle}>
               <Image
-                source={require('../../assets/logo/logo.jpg')}
+                source={require("../../assets/logo/logo.jpg")}
                 style={styles.logoImage}
                 resizeMode="cover"
               />
@@ -130,7 +145,9 @@ export default function LoginScreen() {
 
             {/* General Error */}
             {errors.general && (
-              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>{errors.general}</Text>
+              <Text style={[styles.error, { marginBottom: SPACING.lg }]}>
+                {errors.general}
+              </Text>
             )}
 
             {/* Forgot Password */}
@@ -151,7 +168,7 @@ export default function LoginScreen() {
           {/* Sign Up Link */}
           <View style={styles.signupContainer}>
             <Text style={styles.signupText}>Don&apos;t have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+            <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
               <Text style={styles.signupLink}>Create Account</Text>
             </TouchableOpacity>
           </View>
@@ -169,7 +186,11 @@ export default function LoginScreen() {
               <MaterialIcons name="public" size={24} color={COLORS.primary} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
-              <MaterialIcons name="phone-android" size={24} color={COLORS.primary} />
+              <MaterialIcons
+                name="phone-android"
+                size={24}
+                color={COLORS.primary}
+              />
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -189,9 +210,9 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.xl,
   },
   headerTitle: {
@@ -199,7 +220,7 @@ const styles = StyleSheet.create({
     color: COLORS.text,
   },
   logoSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: SPACING.xxxl,
   },
   logoCircle: {
@@ -209,14 +230,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...commonStyles.centered,
     marginBottom: SPACING.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...SHADOWS.md,
     borderWidth: 3,
     borderColor: COLORS.primary,
   },
   logoImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   decorativeLine: {
     width: 60,
@@ -233,13 +254,13 @@ const styles = StyleSheet.create({
   subtitle: {
     ...TYPOGRAPHY.body,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
   },
   form: {
     marginBottom: SPACING.xl,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginTop: SPACING.sm,
   },
   forgotPasswordText: {
@@ -247,8 +268,8 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   signupContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: SPACING.lg,
     marginBottom: SPACING.xl,
   },
@@ -261,8 +282,8 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: SPACING.xl,
     gap: SPACING.md,
   },
@@ -275,8 +296,8 @@ const styles = StyleSheet.create({
     color: COLORS.error,
   },
   socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: SPACING.lg,
   },
   socialButton: {

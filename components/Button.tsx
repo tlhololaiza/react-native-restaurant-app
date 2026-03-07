@@ -1,13 +1,18 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import React from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import React from "react";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 
 interface ButtonProps {
   onPress: () => void;
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline" | "danger";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
@@ -16,8 +21,8 @@ interface ButtonProps {
 export const Button: React.FC<ButtonProps> = ({
   onPress,
   title,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
   disabled = false,
   fullWidth = false,
@@ -26,13 +31,13 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getVariantStyle = () => {
     switch (variant) {
-      case 'primary':
+      case "primary":
         return styles.variantPrimary;
-      case 'secondary':
+      case "secondary":
         return styles.variantSecondary;
-      case 'outline':
+      case "outline":
         return styles.variantOutline;
-      case 'danger':
+      case "danger":
         return styles.variantDanger;
       default:
         return styles.variantPrimary;
@@ -41,11 +46,11 @@ export const Button: React.FC<ButtonProps> = ({
 
   const getSizeStyle = () => {
     switch (size) {
-      case 'sm':
+      case "sm":
         return styles.sizeSm;
-      case 'md':
+      case "md":
         return styles.sizeMd;
-      case 'lg':
+      case "lg":
         return styles.sizeLg;
       default:
         return styles.sizeMd;
@@ -53,7 +58,7 @@ export const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextColor = () => {
-    if (variant === 'outline') return COLORS.primary;
+    if (variant === "outline") return COLORS.primary;
     return COLORS.white;
   };
 
@@ -80,10 +85,10 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: RADIUS.md,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   sizeSm: {
     paddingHorizontal: SPACING.md,
@@ -98,11 +103,11 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.lg,
   },
   fullWidth: {
-    width: '100%',
+    width: "100%",
   },
   text: {
     ...TYPOGRAPHY.bodyBold,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   variantPrimary: {
     backgroundColor: COLORS.primary,
@@ -111,7 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray200,
   },
   variantOutline: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 2,
     borderColor: COLORS.primary,
   },

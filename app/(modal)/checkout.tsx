@@ -1,29 +1,37 @@
-import { Button } from '@/components/Button';
-import { InputField } from '@/components/InputField';
-import { createOrder } from '@/services/orderService';
-import { useAuthStore } from '@/utils/authStore';
-import { useCartStore } from '@/utils/cartStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useFocusEffect } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { Button } from "@/components/Button";
+import { InputField } from "@/components/InputField";
+import { createOrder } from "@/services/orderService";
+import { useAuthStore } from "@/utils/authStore";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function CheckoutScreen() {
   const { user, userProfile } = useAuthStore();
   const { items, clearCart, getTotal } = useCartStore();
-  const [deliveryAddress, setDeliveryAddress] = useState(userProfile?.address || '123 Main St, City');
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [notes, setNotes] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    userProfile?.address || "123 Main St, City",
+  );
+  const [paymentMethod, setPaymentMethod] = useState("card");
+  const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Check if user is authenticated
@@ -31,15 +39,15 @@ export default function CheckoutScreen() {
     useCallback(() => {
       if (!user) {
         Alert.alert(
-          'Login Required',
-          'Please login or register to place an order',
+          "Login Required",
+          "Please login or register to place an order",
           [
-            { text: 'Cancel', onPress: () => router.back(), style: 'cancel' },
-            { text: 'Login', onPress: () => router.push('/(auth)/login') },
-          ]
+            { text: "Cancel", onPress: () => router.back(), style: "cancel" },
+            { text: "Login", onPress: () => router.push("/(auth)/login") },
+          ],
         );
       }
-    }, [user])
+    }, [user]),
   );
 
   const subtotal = getTotal();
@@ -49,8 +57,8 @@ export default function CheckoutScreen() {
 
   const handlePlaceOrder = async () => {
     if (!user || !userProfile) {
-      Alert.alert('Error', 'Please login to place an order');
-      router.push('/(auth)/login');
+      Alert.alert("Error", "Please login to place an order");
+      router.push("/(auth)/login");
       return;
     }
 
@@ -69,17 +77,17 @@ export default function CheckoutScreen() {
         tax,
         deliveryFee,
         total,
-        status: 'pending',
+        status: "pending",
       });
 
       clearCart();
-      
+
       router.push({
-        pathname: '/(modal)/order-success',
+        pathname: "/(modal)/order-success",
         params: { orderNumber: orderId },
       });
     } catch {
-      Alert.alert('Error', 'Failed to place order. Please try again.');
+      Alert.alert("Error", "Failed to place order. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -114,25 +122,29 @@ export default function CheckoutScreen() {
         {/* Payment Method */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          
+
           <TouchableOpacity
             style={[
               styles.paymentOption,
-              paymentMethod === 'card' && styles.paymentOptionSelected,
+              paymentMethod === "card" && styles.paymentOptionSelected,
             ]}
-            onPress={() => setPaymentMethod('card')}
+            onPress={() => setPaymentMethod("card")}
           >
             <View
               style={[
                 styles.radioButton,
-                paymentMethod === 'card' && styles.radioButtonSelected,
+                paymentMethod === "card" && styles.radioButtonSelected,
               ]}
             >
-              {paymentMethod === 'card' && (
+              {paymentMethod === "card" && (
                 <View style={styles.radioButtonInner} />
               )}
             </View>
-            <MaterialIcons name="credit-card" size={20} color={COLORS.primary} />
+            <MaterialIcons
+              name="credit-card"
+              size={20}
+              color={COLORS.primary}
+            />
             <View style={{ flex: 1, marginLeft: SPACING.md }}>
               <Text style={styles.paymentMethodName}>Credit/Debit Card</Text>
               <Text style={styles.paymentMethodDescription}>
@@ -144,21 +156,25 @@ export default function CheckoutScreen() {
           <TouchableOpacity
             style={[
               styles.paymentOption,
-              paymentMethod === 'wallet' && styles.paymentOptionSelected,
+              paymentMethod === "wallet" && styles.paymentOptionSelected,
             ]}
-            onPress={() => setPaymentMethod('wallet')}
+            onPress={() => setPaymentMethod("wallet")}
           >
             <View
               style={[
                 styles.radioButton,
-                paymentMethod === 'wallet' && styles.radioButtonSelected,
+                paymentMethod === "wallet" && styles.radioButtonSelected,
               ]}
             >
-              {paymentMethod === 'wallet' && (
+              {paymentMethod === "wallet" && (
                 <View style={styles.radioButtonInner} />
               )}
             </View>
-            <MaterialIcons name="account-balance-wallet" size={20} color={COLORS.primary} />
+            <MaterialIcons
+              name="account-balance-wallet"
+              size={20}
+              color={COLORS.primary}
+            />
             <View style={{ flex: 1, marginLeft: SPACING.md }}>
               <Text style={styles.paymentMethodName}>Mobile Wallet</Text>
               <Text style={styles.paymentMethodDescription}>
@@ -170,17 +186,17 @@ export default function CheckoutScreen() {
           <TouchableOpacity
             style={[
               styles.paymentOption,
-              paymentMethod === 'cash' && styles.paymentOptionSelected,
+              paymentMethod === "cash" && styles.paymentOptionSelected,
             ]}
-            onPress={() => setPaymentMethod('cash')}
+            onPress={() => setPaymentMethod("cash")}
           >
             <View
               style={[
                 styles.radioButton,
-                paymentMethod === 'cash' && styles.radioButtonSelected,
+                paymentMethod === "cash" && styles.radioButtonSelected,
               ]}
             >
-              {paymentMethod === 'cash' && (
+              {paymentMethod === "cash" && (
                 <View style={styles.radioButtonInner} />
               )}
             </View>
@@ -209,7 +225,7 @@ export default function CheckoutScreen() {
         {/* Order Summary */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Order Summary</Text>
-          
+
           <View style={styles.summaryCard}>
             {items.map((item) => (
               <View key={item.id} style={styles.summaryItem}>
@@ -226,7 +242,9 @@ export default function CheckoutScreen() {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>R{subtotal.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>
+                R{subtotal.toLocaleString()}
+              </Text>
             </View>
 
             <View style={styles.summaryRow}>
@@ -236,7 +254,9 @@ export default function CheckoutScreen() {
 
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>R{deliveryFee.toLocaleString()}</Text>
+              <Text style={styles.summaryValue}>
+                R{deliveryFee.toLocaleString()}
+              </Text>
             </View>
 
             <View style={styles.divider} />
@@ -269,9 +289,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     borderBottomColor: COLORS.border,
@@ -295,8 +315,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   paymentOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -343,9 +363,9 @@ const styles = StyleSheet.create({
     ...SHADOWS.sm,
   },
   summaryItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.md,
   },
   summaryItemName: {
@@ -363,9 +383,9 @@ const styles = StyleSheet.create({
     marginVertical: SPACING.md,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.md,
   },
   summaryLabel: {
@@ -383,7 +403,7 @@ const styles = StyleSheet.create({
   totalValue: {
     ...TYPOGRAPHY.h4,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   bottomSection: {
     paddingHorizontal: SPACING.lg,

@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export interface CartItem {
   id: string;
@@ -17,11 +17,11 @@ interface CartStore {
   removeItem: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
-  updateItemExtras: (id: string, extras: CartItem['extras']) => void;
-  updateItemSides: (id: string, sides: CartItem['sides']) => void;
+  updateItemExtras: (id: string, extras: CartItem["extras"]) => void;
+  updateItemSides: (id: string, sides: CartItem["sides"]) => void;
   updateItemRemovedIngredients: (
     id: string,
-    removedIngredients: CartItem['removedIngredients']
+    removedIngredients: CartItem["removedIngredients"],
   ) => void;
   getTotal: () => number;
   getItemCount: () => number;
@@ -35,7 +35,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
       if (existingItem) {
         return {
           items: state.items.map((i) =>
-            i.id === item.id ? { ...i, quantity: i.quantity + item.quantity } : i
+            i.id === item.id
+              ? { ...i, quantity: i.quantity + item.quantity }
+              : i,
           ),
         };
       }
@@ -48,33 +50,35 @@ export const useCartStore = create<CartStore>((set, get) => ({
   updateQuantity: (id, quantity) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item
+        item.id === id ? { ...item, quantity: Math.max(0, quantity) } : item,
       ),
     })),
   clearCart: () => set({ items: [] }),
   updateItemExtras: (id, extras) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === id ? { ...item, extras } : item
+        item.id === id ? { ...item, extras } : item,
       ),
     })),
   updateItemSides: (id, sides) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === id ? { ...item, sides } : item
+        item.id === id ? { ...item, sides } : item,
       ),
     })),
   updateItemRemovedIngredients: (id, removedIngredients) =>
     set((state) => ({
       items: state.items.map((item) =>
-        item.id === id ? { ...item, removedIngredients } : item
+        item.id === id ? { ...item, removedIngredients } : item,
       ),
     })),
   getTotal: () => {
     const items = get().items;
     return items.reduce((total, item) => {
       const itemTotal = item.price * item.quantity;
-      const extrasTotal = item.extras ? item.extras.reduce((sum, extra) => sum + extra.price, 0) : 0;
+      const extrasTotal = item.extras
+        ? item.extras.reduce((sum, extra) => sum + extra.price, 0)
+        : 0;
       return total + itemTotal + extrasTotal;
     }, 0);
   },

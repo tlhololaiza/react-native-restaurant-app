@@ -1,8 +1,7 @@
-import { COLORS } from '@/utils/colors';
-import { SPACING } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { COLORS } from "@/utils/colors";
+import { SPACING } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
 
 export default function TabsLayout() {
   return (
@@ -20,14 +19,14 @@ export default function TabsLayout() {
         headerShown: false,
         tabBarLabelStyle: {
           fontSize: 12,
-          fontWeight: '600',
+          fontWeight: "600",
         },
       }}
     >
       <Tabs.Screen
         name="home"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="home" size={24} color={color} />
           ),
@@ -36,7 +35,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: 'Search',
+          title: "Search",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="search" size={24} color={color} />
           ),
@@ -45,7 +44,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="cart"
         options={{
-          title: 'Cart',
+          title: "Cart",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="shopping-cart" size={24} color={color} />
           ),
@@ -54,7 +53,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: "Profile",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="person" size={24} color={color} />
           ),

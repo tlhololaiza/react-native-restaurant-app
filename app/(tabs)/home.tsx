@@ -1,14 +1,15 @@
-import { CategoryTabs } from '@/components/CategoryTabs';
-import { FoodCard } from '@/components/FoodCard';
-import { SearchBar } from '@/components/SearchBar';
-import { getFoodItems } from '@/services/foodService';
-import { useCartStore } from '@/utils/cartStore';
-import { COLORS } from '@/utils/colors';
-import { initializeFirestoreData } from '@/utils/seedService';
-import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { CategoryTabs } from "@/components/CategoryTabs";
+import { FoodCard } from "@/components/FoodCard";
+import { SearchBar } from "@/components/SearchBar";
+import { getFoodItems } from "@/services/foodService";
+import { useAuthStore } from "@/utils/authStore";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
+import { initializeFirestoreData } from "@/utils/seedService";
+import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -16,22 +17,25 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
-} from 'react-native';
+  View,
+} from "react-native";
 
 // Categories mapping
 const CATEGORIES = [
-  { id: 'burgers', name: 'Burgers' },
-  { id: 'pizza', name: 'Pizza' },
-  { id: 'chicken', name: 'Chicken' },
-  { id: 'desserts', name: 'Desserts' },
-  { id: 'drinks', name: 'Drinks' },
+  { id: "burgers", name: "Burgers" },
+  { id: "pizza", name: "Pizza" },
+  { id: "chicken", name: "Chicken" },
+  { id: "desserts", name: "Desserts" },
+  { id: "drinks", name: "Drinks" },
 ];
 
 export default function HomeScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('burgers');
-  const [userName] = useState('John'); // This would come from auth context in production
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("burgers");
+  const { user, userProfile } = useAuthStore();
+  const userName = userProfile?.name
+    ? `${userProfile.name}${userProfile.surname ? ` ${userProfile.surname}` : ""}`
+    : (user?.displayName ?? "Guest");
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,27 +45,27 @@ export default function HomeScreen() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        console.log('HomeScreen: Starting data load...');
+        console.log("HomeScreen: Starting data load...");
         setLoading(true);
         setError(null);
-        
+
         await initializeFirestoreData();
-        console.log('HomeScreen: Fetching food items...');
+        console.log("HomeScreen: Fetching food items...");
         const items = await getFoodItems();
-        console.log('HomeScreen: Fetched items:', items.length, items);
-        
+        console.log("HomeScreen: Fetched items:", items.length, items);
+
         if (items && items.length > 0) {
           setFoodItems(items);
-          console.log('HomeScreen: Items set successfully');
+          console.log("HomeScreen: Items set successfully");
         } else {
-          setError('No food items available');
+          setError("No food items available");
         }
       } catch (error) {
-        console.error('HomeScreen: Error loading food items:', error);
-        setError('Failed to load menu items');
+        console.error("HomeScreen: Error loading food items:", error);
+        setError("Failed to load menu items");
       } finally {
         setLoading(false);
-        console.log('HomeScreen: Loading complete');
+        console.log("HomeScreen: Loading complete");
       }
     };
 
@@ -71,18 +75,18 @@ export default function HomeScreen() {
   const filteredItems = foodItems.filter(
     (item) =>
       item.category === activeCategory &&
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleFoodPress = (id: string) => {
     router.push({
-      pathname: '/(modal)/item-details',
+      pathname: "/(modal)/item-details",
       params: { itemId: id },
     });
   };
 
   const handleAddToCart = (itemId: string) => {
-    const item = foodItems.find(i => i.id === itemId);
+    const item = foodItems.find((i) => i.id === itemId);
     if (item) {
       addItem({
         id: item.id,
@@ -97,9 +101,9 @@ export default function HomeScreen() {
   const renderHeader = () => {
     const getGreeting = () => {
       const hour = new Date().getHours();
-      if (hour < 12) return 'Good Morning';
-      if (hour < 18) return 'Good Afternoon';
-      return 'Good Evening';
+      if (hour < 12) return "Good Morning";
+      if (hour < 18) return "Good Afternoon";
+      return "Good Evening";
     };
 
     return (
@@ -107,44 +111,54 @@ export default function HomeScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}, {userName}!</Text>
+            <Text style={styles.greeting}>
+              {getGreeting()}, {userName}!
+            </Text>
             <Text style={styles.location}>
-              <MaterialIcons name="location-on" size={14} color={COLORS.textLight} />
-              {' 123 Main St, City'}
+              <MaterialIcons
+                name="location-on"
+                size={14}
+                color={COLORS.textLight}
+              />
+              {" 123 Main St, City"}
             </Text>
           </View>
-        <TouchableOpacity
-          style={styles.cartIcon}
-          onPress={() => router.push('/(tabs)/cart')}
-        >
-          <MaterialIcons name="shopping-cart" size={24} color={COLORS.white} />
-          {cartCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cartCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.cartIcon}
+            onPress={() => router.push("/(tabs)/cart")}
+          >
+            <MaterialIcons
+              name="shopping-cart"
+              size={24}
+              color={COLORS.white}
+            />
+            {cartCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-      {/* Search Bar */}
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Search burgers, pizza..."
-      />
-
-      {/* Categories */}
-      <View style={styles.categoriesSection}>
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <CategoryTabs
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
+        {/* Search Bar */}
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search burgers, pizza..."
         />
-      </View>
 
-      <Text style={styles.resultsTitle}>Popular Items</Text>
-    </View>
+        {/* Categories */}
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <CategoryTabs
+            categories={CATEGORIES}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+        </View>
+
+        <Text style={styles.resultsTitle}>Popular Items</Text>
+      </View>
     );
   };
 
@@ -177,8 +191,8 @@ export default function HomeScreen() {
         <Text style={styles.emptyTitle}>No items found</Text>
         <Text style={styles.emptySubtitle}>
           {searchQuery
-            ? 'Try searching for something else'
-            : 'No items in this category yet'}
+            ? "Try searching for something else"
+            : "No items in this category yet"}
         </Text>
       </View>
     );
@@ -203,7 +217,9 @@ export default function HomeScreen() {
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={filteredItems.length > 0 ? styles.columnWrapper : undefined}
+        columnWrapperStyle={
+          filteredItems.length > 0 ? styles.columnWrapper : undefined
+        }
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmptyState}
         contentContainerStyle={styles.listContent}
@@ -215,9 +231,9 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: COLORS.primary,
     padding: SPACING.lg,
     paddingTop: 0,
@@ -229,14 +245,14 @@ const styles = StyleSheet.create({
   },
   location: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "rgba(255, 255, 255, 0.8)",
   },
   cartIcon: {
-    position: 'relative',
+    position: "relative",
     padding: SPACING.md,
   },
   cartBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
     backgroundColor: COLORS.error,
@@ -272,7 +288,7 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   columnWrapper: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingHorizontal: SPACING.lg,
   },
   foodCardWrapper: {
@@ -280,8 +296,8 @@ const styles = StyleSheet.create({
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: SPACING.xxxl,
     paddingHorizontal: SPACING.lg,
     minHeight: 300,
@@ -300,13 +316,13 @@ const styles = StyleSheet.create({
   emptySubtitle: {
     ...TYPOGRAPHY.body,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
   },
   emptyHint: {
     ...TYPOGRAPHY.caption,
     color: COLORS.gray400,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: SPACING.md,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

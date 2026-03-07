@@ -1,43 +1,57 @@
-import { Button } from '@/components/Button';
-import { useCartStore } from '@/utils/cartStore';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useMemo, useState } from 'react';
+import { Button } from "@/components/Button";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useMemo, useState } from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 const EXTRAS = [
-  { id: '1', name: 'Extra Cheese', price: 200 },
-  { id: '2', name: 'Bacon', price: 300 },
-  { id: '3', name: 'Mushrooms', price: 150 },
-  { id: '4', name: 'Onions', price: 100 },
+  { id: "1", name: "Extra Cheese", price: 200 },
+  { id: "2", name: "Bacon", price: 300 },
+  { id: "3", name: "Mushrooms", price: 150 },
+  { id: "4", name: "Onions", price: 100 },
 ];
 
 const SIDES = [
-  { id: 's1', name: 'French Fries', price: 500 },
-  { id: 's2', name: 'Coleslaw', price: 300 },
-  { id: 's3', name: 'Jalapeño Poppers', price: 400 },
+  { id: "s1", name: "French Fries", price: 500 },
+  { id: "s2", name: "Coleslaw", price: 300 },
+  { id: "s3", name: "Jalapeño Poppers", price: 400 },
 ];
 
 const REMOVE_OPTIONS = [
-  { id: 'r1', name: 'Pickles' },
-  { id: 'r2', name: 'Onions' },
-  { id: 'r3', name: 'Tomato' },
-  { id: 'r4', name: 'Lettuce' },
+  { id: "r1", name: "Pickles" },
+  { id: "r2", name: "Onions" },
+  { id: "r3", name: "Tomato" },
+  { id: "r4", name: "Lettuce" },
 ];
 
 export default function EditExtrasScreen() {
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
-  const { items, updateItemExtras, updateItemSides, updateItemRemovedIngredients } = useCartStore();
-  const cartItem = useMemo(() => items.find(i => i.id === itemId), [items, itemId]);
+  const {
+    items,
+    updateItemExtras,
+    updateItemSides,
+    updateItemRemovedIngredients,
+  } = useCartStore();
+  const cartItem = useMemo(
+    () => items.find((i) => i.id === itemId),
+    [items, itemId],
+  );
 
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [selectedSide, setSelectedSide] = useState<string | null>(null);
@@ -46,21 +60,27 @@ export default function EditExtrasScreen() {
   useEffect(() => {
     if (cartItem) {
       if (cartItem.extras) {
-        const initialExtraIds = cartItem.extras.map(ex => {
-          const match = [...EXTRAS, ...SIDES].find(e => e.name === ex.name && e.price === ex.price);
-          return match?.id;
-        }).filter((id): id is string => Boolean(id));
+        const initialExtraIds = cartItem.extras
+          .map((ex) => {
+            const match = [...EXTRAS, ...SIDES].find(
+              (e) => e.name === ex.name && e.price === ex.price,
+            );
+            return match?.id;
+          })
+          .filter((id): id is string => Boolean(id));
         setSelectedExtras(initialExtraIds);
       }
       if (cartItem.sides) {
-        const matchSide = SIDES.find(s => s.name === cartItem.sides);
+        const matchSide = SIDES.find((s) => s.name === cartItem.sides);
         setSelectedSide(matchSide?.id ?? null);
       }
       if (cartItem.removedIngredients) {
-        const initialRemovedIds = cartItem.removedIngredients.map(name => {
-          const match = REMOVE_OPTIONS.find(r => r.name === name);
-          return match?.id;
-        }).filter((id): id is string => Boolean(id));
+        const initialRemovedIds = cartItem.removedIngredients
+          .map((name) => {
+            const match = REMOVE_OPTIONS.find((r) => r.name === name);
+            return match?.id;
+          })
+          .filter((id): id is string => Boolean(id));
         setRemovedItems(initialRemovedIds);
       }
     }
@@ -68,13 +88,17 @@ export default function EditExtrasScreen() {
 
   const toggleExtra = (extraId: string) => {
     setSelectedExtras((prev) =>
-      prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]
+      prev.includes(extraId)
+        ? prev.filter((id) => id !== extraId)
+        : [...prev, extraId],
     );
   };
 
   const toggleRemove = (removeId: string) => {
     setRemovedItems((prev) =>
-      prev.includes(removeId) ? prev.filter((id) => id !== removeId) : [...prev, removeId]
+      prev.includes(removeId)
+        ? prev.filter((id) => id !== removeId)
+        : [...prev, removeId],
     );
   };
 
@@ -84,23 +108,33 @@ export default function EditExtrasScreen() {
       return;
     }
 
-    const extrasToSave = selectedExtras.reduce<{ name: string; price: number }[]>((acc, id) => {
-      const found = [...EXTRAS, ...SIDES].find(e => e.id === id);
+    const extrasToSave = selectedExtras.reduce<
+      { name: string; price: number }[]
+    >((acc, id) => {
+      const found = [...EXTRAS, ...SIDES].find((e) => e.id === id);
       if (found) acc.push({ name: found.name, price: found.price });
       return acc;
     }, []);
 
     const sideToSave = selectedSide
-      ? (SIDES.find(s => s.id === selectedSide)?.name ?? null)
+      ? (SIDES.find((s) => s.id === selectedSide)?.name ?? null)
       : null;
 
     const removedIngredientsToSave = removedItems
-      .map(id => REMOVE_OPTIONS.find(r => r.id === id)?.name)
+      .map((id) => REMOVE_OPTIONS.find((r) => r.id === id)?.name)
       .filter((name): name is string => Boolean(name));
 
-    updateItemExtras(itemId, extrasToSave.length > 0 ? extrasToSave : undefined);
+    updateItemExtras(
+      itemId,
+      extrasToSave.length > 0 ? extrasToSave : undefined,
+    );
     updateItemSides(itemId, sideToSave ?? undefined);
-    updateItemRemovedIngredients(itemId, removedIngredientsToSave.length > 0 ? removedIngredientsToSave : undefined);
+    updateItemRemovedIngredients(
+      itemId,
+      removedIngredientsToSave.length > 0
+        ? removedIngredientsToSave
+        : undefined,
+    );
 
     router.back();
   };
@@ -123,7 +157,9 @@ export default function EditExtrasScreen() {
         {/* Add Extras Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Add Extras</Text>
-          <Text style={styles.sectionSubtitle}>Select any extras you&apos;d like to add</Text>
+          <Text style={styles.sectionSubtitle}>
+            Select any extras you&apos;d like to add
+          </Text>
 
           {EXTRAS.map((extra) => (
             <TouchableOpacity
@@ -152,13 +188,17 @@ export default function EditExtrasScreen() {
         {/* Sides Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Choose a Side</Text>
-          <Text style={styles.sectionSubtitle}>Pick your favorite side dish</Text>
+          <Text style={styles.sectionSubtitle}>
+            Pick your favorite side dish
+          </Text>
 
           {SIDES.map((side) => (
             <TouchableOpacity
               key={side.id}
               style={styles.optionItem}
-              onPress={() => setSelectedSide(prev => (prev === side.id ? null : side.id))}
+              onPress={() =>
+                setSelectedSide((prev) => (prev === side.id ? null : side.id))
+              }
             >
               <View
                 style={[
@@ -181,7 +221,9 @@ export default function EditExtrasScreen() {
         {/* Remove Ingredients Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Remove Ingredients</Text>
-          <Text style={styles.sectionSubtitle}>Uncheck items you don&apos;t want</Text>
+          <Text style={styles.sectionSubtitle}>
+            Uncheck items you don&apos;t want
+          </Text>
 
           {REMOVE_OPTIONS.map((item) => (
             <TouchableOpacity
@@ -192,7 +234,8 @@ export default function EditExtrasScreen() {
               <View
                 style={[
                   styles.removeCheckbox,
-                  removedItems.includes(item.id) && styles.removeCheckboxSelected,
+                  removedItems.includes(item.id) &&
+                    styles.removeCheckboxSelected,
                 ]}
               >
                 {removedItems.includes(item.id) && (
@@ -203,7 +246,7 @@ export default function EditExtrasScreen() {
                 <Text style={styles.optionName}>{item.name}</Text>
               </View>
               <Text style={styles.optionStatus}>
-                {removedItems.includes(item.id) ? 'Will remove' : 'Included'}
+                {removedItems.includes(item.id) ? "Will remove" : "Included"}
               </Text>
             </TouchableOpacity>
           ))}
@@ -214,13 +257,13 @@ export default function EditExtrasScreen() {
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Extras Added</Text>
             <Text style={styles.summaryValue}>
-              {selectedExtras.length > 0 ? `+${selectedExtras.length}` : 'None'}
+              {selectedExtras.length > 0 ? `+${selectedExtras.length}` : "None"}
             </Text>
           </View>
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Items to Remove</Text>
             <Text style={styles.summaryValue}>
-              {removedItems.length > 0 ? removedItems.length : 'None'}
+              {removedItems.length > 0 ? removedItems.length : "None"}
             </Text>
           </View>
         </View>
@@ -245,9 +288,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.lg,
     borderBottomColor: COLORS.border,
@@ -276,8 +319,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -317,7 +360,7 @@ const styles = StyleSheet.create({
   optionPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   optionStatus: {
     ...TYPOGRAPHY.caption,
@@ -331,9 +374,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   summaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.md,
   },
   summaryLabel: {

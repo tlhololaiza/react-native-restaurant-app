@@ -1,8 +1,10 @@
-import { getUserProfile, onAuthStateChanged } from '@/services/firebase';
-import { useAuthStore } from '@/utils/authStore';
-import React, { useEffect } from 'react';
+import { getUserProfile, onAuthStateChanged } from "@/services/firebase";
+import { useAuthStore } from "@/utils/authStore";
+import React, { useEffect } from "react";
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { setUser, setUserProfile } = useAuthStore();
 
   useEffect(() => {
@@ -15,7 +17,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUserProfile(profile);
           }
         } catch (error) {
-          console.error('Error fetching user profile:', error);
+          console.error("Error fetching user profile:", error);
         }
       } else {
         setUser(null);

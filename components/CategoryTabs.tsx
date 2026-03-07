@@ -1,13 +1,13 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import React from 'react';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface CategoryTabsProps {
   categories: { id: string; name: string }[];
@@ -87,8 +87,8 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: SPACING.lg,
     gap: SPACING.md,
     marginVertical: SPACING.md,
@@ -99,18 +99,18 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     backgroundColor: COLORS.gray100,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: "transparent",
   },
   gridTab: {
     flex: 1,
-    minWidth: '45%',
+    minWidth: "45%",
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderRadius: RADIUS.md,
     backgroundColor: COLORS.gray100,
     borderWidth: 1,
-    borderColor: 'transparent',
-    alignItems: 'center',
+    borderColor: "transparent",
+    alignItems: "center",
   },
   tabActive: {
     backgroundColor: COLORS.primary,
