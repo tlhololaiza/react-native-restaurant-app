@@ -13,7 +13,7 @@ import {
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   SafeAreaView,
@@ -28,8 +28,13 @@ export default function CheckoutScreen() {
   const { user, userProfile } = useAuthStore();
   const { items, clearCart, getTotal } = useCartStore();
   const [deliveryAddress, setDeliveryAddress] = useState(
-    userProfile?.address || "123 Main St, City",
+    userProfile?.address || "",
   );
+
+  // Keep delivery address in sync with logged-in user's profile
+  useEffect(() => {
+    if (userProfile?.address) setDeliveryAddress(userProfile.address);
+  }, [userProfile]);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,14 +56,29 @@ export default function CheckoutScreen() {
   );
 
   const subtotal = getTotal();
-  const deliveryFee = 50;
+  const deliveryFee = 15;
   const tax = Math.floor(subtotal * 0.05);
   const total = subtotal + deliveryFee + tax;
 
   const handlePlaceOrder = async () => {
     if (!user || !userProfile) {
       Alert.alert("Error", "Please login to place an order");
-      router.push("/(auth)/login");
+      router.push("/(modal)/order-success");
+      return;
+    }
+
+    if (paymentMethod === "card" && !userProfile.cardNumber) {
+      Alert.alert(
+        "No Card Saved",
+        "Please add a payment card in your profile before placing an order.",
+        [
+          { text: "Cancel", style: "cancel" },
+          {
+            text: "Edit Profile",
+            onPress: () => router.push("/(tabs)/profile"),
+          },
+        ],
+      );
       return;
     }
 
@@ -84,7 +104,7 @@ export default function CheckoutScreen() {
 
       router.push({
         pathname: "/(modal)/order-success",
-        params: { orderNumber: orderId },
+        params: { orderNumber: orderId, total },
       });
     } catch {
       Alert.alert("Error", "Failed to place order. Please try again.");
@@ -148,7 +168,13 @@ export default function CheckoutScreen() {
             <View style={{ flex: 1, marginLeft: SPACING.md }}>
               <Text style={styles.paymentMethodName}>Credit/Debit Card</Text>
               <Text style={styles.paymentMethodDescription}>
-                **** **** **** 3456
+                {userProfile?.cardNumber
+                  ? userProfile.cardNumber
+                      .replace(/\s+/g, "")
+                      .replace(/.(?=.{4})/g, "*")
+                      .match(/.{1,4}/g)
+                      ?.join(" ")
+                  : "No card saved"}
               </Text>
             </View>
           </TouchableOpacity>
@@ -177,9 +203,7 @@ export default function CheckoutScreen() {
             />
             <View style={{ flex: 1, marginLeft: SPACING.md }}>
               <Text style={styles.paymentMethodName}>Mobile Wallet</Text>
-              <Text style={styles.paymentMethodDescription}>
-                Balance: R5,000
-              </Text>
+              <Text style={styles.paymentMethodDescription}>Balance: —</Text>
             </View>
           </TouchableOpacity>
 

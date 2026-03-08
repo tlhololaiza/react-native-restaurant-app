@@ -8,6 +8,8 @@ import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 export default function OrderSuccessScreen() {
   const { orderNumber } = useLocalSearchParams<{ orderNumber: string }>();
 
+  const { total } = useLocalSearchParams<{ total?: string }>();
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -46,7 +48,9 @@ export default function OrderSuccessScreen() {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Total Amount</Text>
-            <Text style={styles.detailValue}>R4,000</Text>
+            <Text style={styles.detailValue}>
+              {total ? `R${Number(total).toLocaleString()}` : "R0"}
+            </Text>
           </View>
         </View>
 

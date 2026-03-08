@@ -12,8 +12,7 @@ import {
   getDoc,
   getDocFromCache,
   getFirestore,
-  setDoc,
-  updateDoc,
+  setDoc
 } from "firebase/firestore";
 
 // Firebase configuration
@@ -145,10 +144,16 @@ export const updateUserProfile = async (
 ): Promise<void> => {
   try {
     const docRef = doc(db, "users", uid);
-    await updateDoc(docRef, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
+    // Use setDoc with merge to create the document if it doesn't exist
+    // and update the provided fields atomically.
+    await setDoc(
+      docRef,
+      {
+        ...updates,
+        updatedAt: Date.now(),
+      },
+      { merge: true },
+    );
   } catch (error: any) {
     throw new Error(error.message);
   }

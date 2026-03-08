@@ -163,13 +163,13 @@ export default function CartScreen() {
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Delivery Fee</Text>
-          <Text style={styles.summaryValue}>R50</Text>
+          <Text style={styles.summaryValue}>R15</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.totalValue}>
-            R{(totalPrice + 50).toLocaleString()}
+            R{(totalPrice + 15).toLocaleString()}
           </Text>
         </View>
       </View>

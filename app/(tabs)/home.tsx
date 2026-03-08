@@ -1,9 +1,9 @@
-import { CategoryTabs } from "@/components/CategoryTabs";
+import { CategoriesSection } from "@/components/CategoriesSection";
 import { FoodCard } from "@/components/FoodCard";
-import { SearchBar } from "@/components/SearchBar";
 import { getFoodItems } from "@/services/foodService";
 import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
+import { CATEGORIES } from "@/utils/categories";
 import { COLORS } from "@/utils/colors";
 import { initializeFirestoreData } from "@/utils/seedService";
 import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
@@ -20,14 +20,7 @@ import {
   View,
 } from "react-native";
 
-// Categories mapping
-const CATEGORIES = [
-  { id: "burgers", name: "Burgers" },
-  { id: "pizza", name: "Pizza" },
-  { id: "chicken", name: "Chicken" },
-  { id: "desserts", name: "Desserts" },
-  { id: "drinks", name: "Drinks" },
-];
+// Categories mapping (imported from utils/categories)
 
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -79,9 +72,11 @@ export default function HomeScreen() {
   );
 
   const handleFoodPress = (id: string) => {
+    const item = foodItems.find((i) => i.id === id);
+    if (!item) return;
     router.push({
       pathname: "/(modal)/item-details",
-      params: { itemId: id },
+      params: { item: JSON.stringify(item) },
     });
   };
 
@@ -140,22 +135,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search burgers, pizza..."
-        />
-
         {/* Categories */}
-        <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <CategoryTabs
-            categories={CATEGORIES}
-            activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory}
-          />
-        </View>
+        <CategoriesSection
+          categories={CATEGORIES}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
 
         <Text style={styles.resultsTitle}>Popular Items</Text>
       </View>

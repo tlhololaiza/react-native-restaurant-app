@@ -1,7 +1,8 @@
-import { CategoryTabs } from "@/components/CategoryTabs";
+import { CategoriesSection } from "@/components/CategoriesSection";
 import { FoodCard } from "@/components/FoodCard";
 import { SearchBar } from "@/components/SearchBar";
 import { getFoodItems } from "@/services/foodService";
+import { CATEGORIES } from "@/utils/categories";
 import { COLORS } from "@/utils/colors";
 import { initializeFirestoreData } from "@/utils/seedService";
 import { commonStyles, SPACING, TYPOGRAPHY } from "@/utils/theme";
@@ -10,13 +11,7 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
-const CATEGORIES = [
-  { id: "burgers", name: "Burgers" },
-  { id: "pizza", name: "Pizza" },
-  { id: "chicken", name: "Chicken" },
-  { id: "desserts", name: "Desserts" },
-  { id: "drinks", name: "Drinks" },
-];
+// Categories mapping (imported from utils/categories)
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,9 +42,11 @@ export default function SearchScreen() {
   });
 
   const handleFoodPress = (id: string) => {
+    const item = foodItems.find((i) => i.id === id);
+    if (!item) return;
     router.push({
       pathname: "/(modal)/item-details",
-      params: { itemId: id },
+      params: { item: JSON.stringify(item) },
     });
   };
 
@@ -73,19 +70,16 @@ export default function SearchScreen() {
       />
 
       {/* Categories Section */}
-      <View style={styles.categoriesSection}>
-        <View style={styles.categoryHeader}>
-          <MaterialIcons name="filter-alt" size={20} color={COLORS.primary} />
-          <Text style={styles.sectionTitle}>Filter by Category</Text>
-        </View>
-        <CategoryTabs
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={(id) =>
-            setActiveCategory(activeCategory === id ? "" : id)
-          }
-        />
-      </View>
+      <CategoriesSection
+        title="Filter by Category"
+        icon="filter-alt"
+        iconColor={COLORS.primary}
+        categories={CATEGORIES}
+        activeCategory={activeCategory}
+        onCategoryChange={(id) =>
+          setActiveCategory(activeCategory === id ? "" : id)
+        }
+      />
 
       {/* Results Header */}
       {(searchQuery || activeCategory) && (

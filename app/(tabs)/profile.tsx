@@ -14,6 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -27,14 +28,14 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [profileData, setProfileData] = useState({
-    name: userProfile?.name ?? user?.displayName ?? "John",
+    name: userProfile?.name ?? user?.displayName ?? "",
     surname: userProfile?.surname ?? "",
-    email: userProfile?.email ?? user?.email ?? "john.doe@example.com",
-    phone: userProfile?.phone ?? "+234 800 000 0000",
-    address: userProfile?.address ?? "123 Street Name, City",
-    cardNumber: userProfile?.cardNumber ?? "1234 5678 9012 3456",
-    cardExpiry: userProfile?.cardExpiry ?? "12/25",
-    cardCVV: userProfile?.cardCVV ?? "123",
+    email: userProfile?.email ?? user?.email ?? "",
+    phone: userProfile?.phone ?? "",
+    address: userProfile?.address ?? "",
+    cardNumber: userProfile?.cardNumber ?? "",
+    cardExpiry: userProfile?.cardExpiry ?? "",
+    cardCVV: userProfile?.cardCVV ?? "",
   });
 
   const [editData, setEditData] = useState(profileData);
@@ -42,14 +43,14 @@ export default function ProfileScreen() {
   // Keep local profile state in sync when auth store updates
   useEffect(() => {
     const pd = {
-      name: userProfile?.name ?? user?.displayName ?? "John",
+      name: userProfile?.name ?? user?.displayName ?? "",
       surname: userProfile?.surname ?? "",
-      email: userProfile?.email ?? user?.email ?? "john.doe@example.com",
-      phone: userProfile?.phone ?? "+234 800 000 0000",
-      address: userProfile?.address ?? "123 Street Name, City",
-      cardNumber: userProfile?.cardNumber ?? "1234 5678 9012 3456",
-      cardExpiry: userProfile?.cardExpiry ?? "12/25",
-      cardCVV: userProfile?.cardCVV ?? "123",
+      email: userProfile?.email ?? user?.email ?? "",
+      phone: userProfile?.phone ?? "",
+      address: userProfile?.address ?? "",
+      cardNumber: userProfile?.cardNumber ?? "",
+      cardExpiry: userProfile?.cardExpiry ?? "",
+      cardCVV: userProfile?.cardCVV ?? "",
     };
     setProfileData(pd);
     setEditData(pd);
@@ -69,11 +70,15 @@ export default function ProfileScreen() {
   };
 
   const handleSaveChanges = async () => {
-    if (!user) return;
+    if (!user) {
+      Alert.alert("Not Logged In", "Please login to save your profile");
+      return;
+    }
 
+    Alert.alert("Saving", "Saving profile changes...");
     setLoading(true);
     try {
-      await updateUserProfile(user.uid, {
+      const updates = {
         name: editData.name,
         surname: editData.surname,
         phone: editData.phone,
@@ -81,22 +86,36 @@ export default function ProfileScreen() {
         cardNumber: editData.cardNumber,
         cardExpiry: editData.cardExpiry,
         cardCVV: editData.cardCVV,
-      });
+      };
 
-      setProfileData(editData);
-      setUserProfile({
-        ...userProfile!,
+      await updateUserProfile(user.uid, updates);
+
+      // Build a full profile object to store in the auth store.
+      const updatedProfile = {
+        uid: user.uid,
+        email: user.email ?? editData.email,
         name: editData.name,
         surname: editData.surname,
-        phone: editData.phone,
-        address: editData.address,
-        cardNumber: editData.cardNumber,
-        cardExpiry: editData.cardExpiry,
-        cardCVV: editData.cardCVV,
-      });
+        phone: editData.phone ?? "",
+        address: editData.address ?? "",
+        cardNumber: editData.cardNumber ?? "",
+        cardHolder: userProfile?.cardHolder,
+        cardExpiry: editData.cardExpiry ?? "",
+        cardCVV: editData.cardCVV ?? "",
+        createdAt: userProfile?.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      setProfileData(updatedProfile);
+      setUserProfile(updatedProfile as any);
       setIsEditing(false);
+      Alert.alert("Success", "Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
+      Alert.alert(
+        "Save Failed",
+        (error as any)?.message || "Failed to save profile",
+      );
     } finally {
       setLoading(false);
     }
@@ -205,7 +224,13 @@ export default function ProfileScreen() {
                     style={{ marginBottom: SPACING.md }}
                   />
                   <Text style={styles.cardNumber}>
-                    {profileData.cardNumber}
+                    {profileData.cardNumber
+                      ? profileData.cardNumber
+                          .replace(/\s+/g, "")
+                          .replace(/.(?=.{4})/g, "*")
+                          .match(/.{1,4}/g)
+                          ?.join(" ")
+                      : ""}
                   </Text>
                   <View style={styles.cardDetails}>
                     <View>
