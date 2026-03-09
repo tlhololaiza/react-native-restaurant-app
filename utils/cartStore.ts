@@ -8,6 +8,7 @@ export interface CartItem {
   image: string;
   extras?: { name: string; price: number }[];
   sides?: string;
+  drink?: string;
   removedIngredients?: string[];
 }
 

@@ -58,7 +58,7 @@ export default function SearchScreen() {
     <View>
       {/* Header Section */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🔍 Discover Meals</Text>
+        <Text style={styles.headerTitle}>Discover Meals</Text>
         <Text style={styles.headerSubtitle}>Find your favorite dishes</Text>
       </View>
 
