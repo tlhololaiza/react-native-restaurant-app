@@ -172,27 +172,6 @@ export default function LoginScreen() {
               <Text style={styles.signupLink}>Create Account</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={commonStyles.divider} />
-            <Text style={styles.dividerText}>or continue with</Text>
-            <View style={commonStyles.divider} />
-          </View>
-
-          {/* Social Login */}
-          <View style={styles.socialContainer}>
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialIcons name="public" size={24} color={COLORS.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialIcons
-                name="phone-android"
-                size={24}
-                color={COLORS.primary}
-              />
-            </TouchableOpacity>
-          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

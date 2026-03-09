@@ -4,23 +4,23 @@ import { logoutUser, updateUserProfile } from "@/services/firebase";
 import { useAuthStore } from "@/utils/authStore";
 import { COLORS } from "@/utils/colors";
 import {
-  commonStyles,
-  RADIUS,
-  SHADOWS,
-  SPACING,
-  TYPOGRAPHY,
+    commonStyles,
+    RADIUS,
+    SHADOWS,
+    SPACING,
+    TYPOGRAPHY,
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function ProfileScreen() {
@@ -88,7 +88,11 @@ export default function ProfileScreen() {
         cardCVV: editData.cardCVV,
       };
 
-      await updateUserProfile(user.uid, updates);
+      const ok = await updateUserProfile(user.uid, updates);
+
+      if (!ok) {
+        throw new Error("Permission denied while updating profile");
+      }
 
       // Build a full profile object to store in the auth store.
       const updatedProfile = {

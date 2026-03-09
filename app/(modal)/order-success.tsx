@@ -6,9 +6,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 export default function OrderSuccessScreen() {
-  const { orderNumber } = useLocalSearchParams<{ orderNumber: string }>();
+  const { orderNumber, total } = useLocalSearchParams<{
+    orderNumber?: string;
+    total?: string;
+  }>();
 
-  const { total } = useLocalSearchParams<{ total?: string }>();
+  const totalAmount = total ? Number(total) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -49,7 +52,7 @@ export default function OrderSuccessScreen() {
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Total Amount</Text>
             <Text style={styles.detailValue}>
-              {total ? `R${Number(total).toLocaleString()}` : "R0"}
+              {`R${totalAmount.toLocaleString()}`}
             </Text>
           </View>
         </View>
@@ -110,15 +113,6 @@ export default function OrderSuccessScreen() {
 
       {/* Buttons */}
       <View style={styles.bottomSection}>
-        <Button
-          title="Track Order"
-          onPress={() => {
-            // TODO: Navigate to order tracking
-            router.replace("/(tabs)/home");
-          }}
-          fullWidth
-          size="lg"
-        />
         <Button
           title="Return to Home"
           onPress={() => router.replace("/(tabs)/home")}

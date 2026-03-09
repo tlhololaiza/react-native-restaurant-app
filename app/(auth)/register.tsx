@@ -145,7 +145,7 @@ export default function RegisterScreen() {
             <View style={styles.row}>
               <InputField
                 label="First Name"
-                placeholder="John"
+                placeholder="Tlholo"
                 value={formData.name}
                 onChangeText={(value) => updateForm("name", value)}
                 error={errors.name}
@@ -153,7 +153,7 @@ export default function RegisterScreen() {
               />
               <InputField
                 label="Last Name"
-                placeholder="Doe"
+                placeholder="Tshwane"
                 value={formData.surname}
                 onChangeText={(value) => updateForm("surname", value)}
                 error={errors.surname}
@@ -163,7 +163,7 @@ export default function RegisterScreen() {
 
             <InputField
               label="Email Address"
-              placeholder="john.doe@example.com"
+              placeholder="email@example.com"
               value={formData.email}
               onChangeText={(value) => updateForm("email", value)}
               keyboardType="email-address"
@@ -173,7 +173,7 @@ export default function RegisterScreen() {
 
             <InputField
               label="Password"
-              placeholder="Create a strong password"
+              placeholder="At least 6 characters"
               value={formData.password}
               onChangeText={(value) => updateForm("password", value)}
               secureTextEntry

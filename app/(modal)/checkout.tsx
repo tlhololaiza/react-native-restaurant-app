@@ -63,7 +63,7 @@ export default function CheckoutScreen() {
   const handlePlaceOrder = async () => {
     if (!user || !userProfile) {
       Alert.alert("Error", "Please login to place an order");
-      router.push("/(modal)/order-success");
+      //router.push("/(auth)/login");
       return;
     }
 
@@ -90,7 +90,7 @@ export default function CheckoutScreen() {
         userSurname: userProfile.surname,
         userEmail: userProfile.email,
         userPhone: userProfile.phone,
-        deliveryAddress,
+        deliveryAddress: userProfile.address,
         cardNumber: userProfile.cardNumber,
         items,
         subtotal,

@@ -12,7 +12,7 @@ import {
   getDoc,
   getDocFromCache,
   getFirestore,
-  setDoc
+  setDoc,
 } from "firebase/firestore";
 
 // Firebase configuration
@@ -133,7 +133,23 @@ export const getUserProfile = async (
       }
     }
 
-    throw new Error(error.message);
+    // Handle permission errors more gracefully: return null instead of throwing
+    // so callers can proceed (e.g., show login or limited UI) without crashing.
+    const msg = error?.message || "";
+    const code = error?.code || "";
+    if (
+      msg.toLowerCase().includes("missing or insufficient permissions") ||
+      msg.toLowerCase().includes("permission-denied") ||
+      code === "permission-denied"
+    ) {
+      console.warn(
+        "Firestore permission denied when reading user profile:",
+        error,
+      );
+      return null;
+    }
+
+    throw new Error(msg);
   }
 };
 
@@ -141,7 +157,7 @@ export const getUserProfile = async (
 export const updateUserProfile = async (
   uid: string,
   updates: Partial<UserProfile>,
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     const docRef = doc(db, "users", uid);
     // Use setDoc with merge to create the document if it doesn't exist
@@ -154,8 +170,25 @@ export const updateUserProfile = async (
       },
       { merge: true },
     );
+
+    return true;
   } catch (error: any) {
-    throw new Error(error.message);
+    const msg = error?.message || "";
+    const code = error?.code || "";
+
+    if (
+      msg.toLowerCase().includes("missing or insufficient permissions") ||
+      msg.toLowerCase().includes("permission-denied") ||
+      code === "permission-denied"
+    ) {
+      console.warn(
+        "Firestore permission denied when updating user profile:",
+        error,
+      );
+      return false;
+    }
+
+    throw new Error(msg);
   }
 };
 
