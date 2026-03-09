@@ -10,7 +10,7 @@ import {
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   SafeAreaView,
@@ -21,73 +21,48 @@ import {
   View,
 } from "react-native";
 
-// Mock item data
-const FOOD_DATA: Record<
-  string,
-  {
-    id: string;
-    image: string;
-    name: string;
-    price: number;
-    description: string;
-    rating: number;
-    reviews: number;
-  }
-> = {
-  "1": {
-    id: "1",
-    image:
-      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop",
-    name: "Classic Burger",
-    price: 89,
-    description:
-      "A delicious classic burger with fresh beef, crispy lettuce, tomato, and our signature sauce on a toasted bun.",
-    rating: 4.5,
-    reviews: 234,
-  },
-  "2": {
-    id: "2",
-    image:
-      "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=500&fit=crop",
-    name: "Margarita Pizza",
-    price: 129,
-    description:
-      "Traditional Italian pizza with fresh mozzarella, basil, and tomato sauce on a thin crispy crust.",
-    rating: 4.7,
-    reviews: 156,
-  },
+type PassedItem = {
+  id: string;
+  image: string;
+  name: string;
+  price: number;
+  description?: string;
+  rating?: number;
+  reviews?: number;
 };
 
 export default function ItemDetailsScreen() {
-  const { itemId } = useLocalSearchParams<{ itemId: string }>();
-  const fallbackItem = FOOD_DATA["1"];
-  const item = (itemId && FOOD_DATA[itemId]) || fallbackItem;
+  const { item: itemParam } = useLocalSearchParams<{ item?: string }>();
+  const [item, setItem] = useState<PassedItem | null>(null);
   const { addItem } = useCartStore();
+
+  useEffect(() => {
+    if (itemParam) {
+      try {
+        const parsed = JSON.parse(itemParam as string) as PassedItem;
+        setItem(parsed);
+      } catch (e) {
+        console.error("Failed to parse item param:", e);
+        setItem(null);
+      }
+    }
+  }, [itemParam]);
 
   const [quantity, setQuantity] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
-  const [selectedSide, setSelectedSide] = useState<string>("s1");
-  const [selectedDrink, setSelectedDrink] = useState<string>("d1");
+  const [selectedSide, setSelectedSide] = useState<string | null>(null);
 
   const EXTRAS = [
     { id: "1", name: "Extra Cheese", price: 10 },
     { id: "2", name: "Bacon", price: 15 },
-    { id: "3", name: "Mushrooms", price: 20 },
+    { id: "3", name: "Mushrooms", price: 8 },
     { id: "4", name: "Onions", price: 5 },
   ];
 
   const SIDES = [
-    { id: "s1", name: "Regular Fries", price: 0 },
-    { id: "s2", name: "Sweet Potato Fries", price: 10 },
-    { id: "s3", name: "Onion Rings", price: 15 },
-    { id: "s4", name: "Side Salad", price: 0 },
-  ];
-
-  const DRINKS = [
-    { id: "d1", name: "Coca-Cola", price: 0 },
-    { id: "d2", name: "Fanta", price: 0 },
-    { id: "d3", name: "Sprite", price: 0 },
-    { id: "d4", name: "Water", price: 0 },
+    { id: "s1", name: "French Fries", price: 30 },
+    { id: "s2", name: "Coleslaw", price: 20 },
+    { id: "s3", name: "Jalapeño Poppers", price: 25 },
   ];
 
   const toggleExtra = (extraId: string) => {
@@ -98,24 +73,34 @@ export default function ItemDetailsScreen() {
     );
   };
 
+  const selectSide = (sideId: string) => {
+    setSelectedSide((prev) => (prev === sideId ? null : sideId));
+  };
+
   const extrasTotal = selectedExtras.reduce((sum, id) => {
     const extra = EXTRAS.find((e) => e.id === id);
     return sum + (extra?.price || 0);
   }, 0);
 
-  const sidePrice = SIDES.find((s) => s.id === selectedSide)?.price ?? 0;
-  const drinkPrice = DRINKS.find((d) => d.id === selectedDrink)?.price ?? 0;
+  const sidePrice = selectedSide
+    ? SIDES.find((s) => s.id === selectedSide)?.price || 0
+    : 0;
 
-  const totalPrice =
-    ((item?.price ?? 0) + extrasTotal + sidePrice + drinkPrice) * quantity;
+  const totalPrice = ((item?.price ?? 0) + extrasTotal + sidePrice) * quantity;
 
   const handleAddToCart = () => {
     const selectedExtrasData = selectedExtras
-      .map((id) => [...EXTRAS, ...SIDES].find((e) => e.id === id))
+      .map((id) => EXTRAS.find((e) => e.id === id))
       .filter(
         (e): e is { id: string; name: string; price: number } =>
           e !== undefined,
       );
+
+    const sideData = selectedSide
+      ? SIDES.find((s) => s.id === selectedSide)
+      : undefined;
+
+    if (!item) return;
 
     addItem({
       id: item.id,
@@ -124,8 +109,7 @@ export default function ItemDetailsScreen() {
       quantity,
       image: item.image,
       extras: selectedExtrasData.length > 0 ? selectedExtrasData : undefined,
-      sides: SIDES.find((s) => s.id === selectedSide)?.name,
-      drink: DRINKS.find((d) => d.id === selectedDrink)?.name,
+      sides: sideData ? sideData.name : undefined,
     });
 
     router.back();
@@ -150,20 +134,30 @@ export default function ItemDetailsScreen() {
       >
         {/* Large Food Image */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: item.image }} style={styles.image} />
-          <View style={styles.ratingBadge}>
-            <MaterialIcons name="star" size={18} color={COLORS.white} />
-            <Text style={styles.ratingText}>{item.rating}</Text>
-            <Text style={styles.reviewsText}>({item.reviews} reviews)</Text>
-          </View>
+          {item ? (
+            <>
+              <Image source={{ uri: item.image }} style={styles.image} />
+              <View style={styles.ratingBadge}>
+                <MaterialIcons name="star" size={18} color={COLORS.white} />
+                <Text style={styles.ratingText}>{item.rating ?? "-"}</Text>
+                <Text style={styles.reviewsText}>
+                  ({item.reviews ?? 0} reviews)
+                </Text>
+              </View>
+            </>
+          ) : (
+            <View style={[styles.imageContainer, commonStyles.centered]}>
+              <Text style={styles.foodName}>Item not found</Text>
+            </View>
+          )}
         </View>
 
         {/* Food Info */}
         <View style={styles.infoSection}>
           <View style={styles.nameRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.foodName}>{item.name}</Text>
-              <Text style={styles.description}>{item.description}</Text>
+              <Text style={styles.foodName}>{item?.name ?? "Unknown"}</Text>
+              <Text style={styles.description}>{item?.description}</Text>
             </View>
           </View>
 
@@ -234,18 +228,15 @@ export default function ItemDetailsScreen() {
                 style={styles.optionItem}
                 onPress={() => setSelectedSide(side.id)}
               >
-                <MaterialIcons
-                  name={
-                    selectedSide === side.id
-                      ? "radio-button-checked"
-                      : "radio-button-unchecked"
-                  }
-                  size={22}
-                  color={
-                    selectedSide === side.id ? COLORS.primary : COLORS.gray400
-                  }
-                  style={styles.optionRadio}
-                />
+                <View style={styles.optionCheckbox}>
+                  {selectedExtras.includes(side.id) && (
+                    <MaterialIcons
+                      name="check"
+                      size={16}
+                      color={COLORS.white}
+                    />
+                  )}
+                </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionName}>{side.name}</Text>
                 </View>

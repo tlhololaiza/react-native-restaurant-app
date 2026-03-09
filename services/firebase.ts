@@ -9,11 +9,10 @@ import {
 } from "firebase/auth";
 import {
   doc,
-  enableIndexedDbPersistence,
   getDoc,
+  getDocFromCache,
   getFirestore,
   setDoc,
-  updateDoc,
 } from "firebase/firestore";
 
 // Firebase configuration
@@ -86,12 +85,7 @@ export const registerUser = async (
       updatedAt: Date.now(),
     };
 
-    try {
-      await setDoc(doc(db, "users", user.uid), userProfile);
-    } catch (firestoreError) {
-      console.warn("Failed to save user profile to Firestore:", firestoreError);
-      // Continue anyway - the user is created in Auth
-    }
+    await setDoc(doc(db, "users", user.uid), userProfile);
 
     return user;
   } catch (error: any) {
@@ -134,9 +128,39 @@ export const getUserProfile = async (
     const docSnap = await getDoc(docRef);
     return docSnap.exists() ? (docSnap.data() as UserProfile) : null;
   } catch (error: any) {
-    console.warn("Error fetching user profile:", error.message);
-    // Return null instead of throwing to allow login to proceed
-    return null;
+    // If Firestore thinks the client is offline, try to read from cache as a fallback.
+    if (
+      error &&
+      typeof error.message === "string" &&
+      error.message.toLowerCase().includes("client is offline")
+    ) {
+      try {
+        const docRef = doc(db, "users", uid);
+        const cachedSnap = await getDocFromCache(docRef);
+        return cachedSnap.exists() ? (cachedSnap.data() as UserProfile) : null;
+      } catch {
+        // Can't read from cache (likely unsupported in this environment) — return null quietly.
+        return null;
+      }
+    }
+
+    // Handle permission errors more gracefully: return null instead of throwing
+    // so callers can proceed (e.g., show login or limited UI) without crashing.
+    const msg = error?.message || "";
+    const code = error?.code || "";
+    if (
+      msg.toLowerCase().includes("missing or insufficient permissions") ||
+      msg.toLowerCase().includes("permission-denied") ||
+      code === "permission-denied"
+    ) {
+      console.warn(
+        "Firestore permission denied when reading user profile:",
+        error,
+      );
+      return null;
+    }
+
+    throw new Error(msg);
   }
 };
 
@@ -144,16 +168,38 @@ export const getUserProfile = async (
 export const updateUserProfile = async (
   uid: string,
   updates: Partial<UserProfile>,
-): Promise<void> => {
+): Promise<boolean> => {
   try {
     const docRef = doc(db, "users", uid);
-    await updateDoc(docRef, {
-      ...updates,
-      updatedAt: Date.now(),
-    });
+    // Use setDoc with merge to create the document if it doesn't exist
+    // and update the provided fields atomically.
+    await setDoc(
+      docRef,
+      {
+        ...updates,
+        updatedAt: Date.now(),
+      },
+      { merge: true },
+    );
+
+    return true;
   } catch (error: any) {
-    console.warn("Error updating user profile:", error.message);
-    // Don't throw - allow the app to continue
+    const msg = error?.message || "";
+    const code = error?.code || "";
+
+    if (
+      msg.toLowerCase().includes("missing or insufficient permissions") ||
+      msg.toLowerCase().includes("permission-denied") ||
+      code === "permission-denied"
+    ) {
+      console.warn(
+        "Firestore permission denied when updating user profile:",
+        error,
+      );
+      return false;
+    }
+
+    throw new Error(msg);
   }
 };
 

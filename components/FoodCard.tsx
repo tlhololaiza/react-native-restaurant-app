@@ -1,7 +1,7 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
 import {
   Dimensions,
   Image,
@@ -9,9 +9,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const cardWidth = (width - SPACING.lg * 2 - SPACING.md) / 2;
 
 interface FoodCardProps {
@@ -34,11 +34,7 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   onCartPress,
 }) => {
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
+    <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         <Image
           source={{ uri: image }}
@@ -65,7 +61,11 @@ export const FoodCard: React.FC<FoodCardProps> = ({
               onPress={onCartPress}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <MaterialIcons name="add-circle" size={24} color={COLORS.primary} />
+              <MaterialIcons
+                name="add-circle"
+                size={24}
+                color={COLORS.primary}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -79,30 +79,30 @@ const styles = StyleSheet.create({
     width: cardWidth,
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...SHADOWS.md,
     marginBottom: SPACING.lg,
   },
   imageContainer: {
-    position: 'relative',
-    width: '100%',
+    position: "relative",
+    width: "100%",
     height: 140,
     backgroundColor: COLORS.gray100,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   ratingBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: SPACING.sm,
     right: SPACING.sm,
     backgroundColor: COLORS.gray900,
     borderRadius: RADIUS.full,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   ratingText: {
@@ -119,14 +119,14 @@ const styles = StyleSheet.create({
     height: 40,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   price: {
     ...TYPOGRAPHY.h4,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   cartButton: {
     padding: 4,

@@ -52,9 +52,9 @@ export default function CartScreen() {
   };
 
   const renderCartItem = ({ item }: { item: (typeof cartItems)[0] }) => {
-    const extrasTotal =
-      item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0;
-    const itemTotal = (item.price + extrasTotal) * item.quantity;
+    const itemTotal =
+      item.price +
+      (item.extras?.reduce((sum, extra) => sum + extra.price, 0) || 0);
 
     return (
       <View style={styles.cartItem}>
@@ -169,13 +169,13 @@ export default function CartScreen() {
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Delivery Fee</Text>
-          <Text style={styles.summaryValue}>R50</Text>
+          <Text style={styles.summaryValue}>R15</Text>
         </View>
         <View style={styles.divider} />
         <View style={styles.summaryRow}>
           <Text style={styles.totalLabel}>Total</Text>
           <Text style={styles.totalValue}>
-            R{(totalPrice + 50).toLocaleString()}
+            R{(totalPrice + 15).toLocaleString()}
           </Text>
         </View>
       </View>

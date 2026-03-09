@@ -1,6 +1,6 @@
-import { UserProfile } from '@/services/firebase';
-import { User } from 'firebase/auth';
-import { create } from 'zustand';
+import { UserProfile } from "@/services/firebase";
+import { User } from "firebase/auth";
+import { create } from "zustand";
 
 interface AuthStore {
   user: User | null;

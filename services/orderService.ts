@@ -1,6 +1,13 @@
-import { db } from '@/services/firebase';
-import { CartItem } from '@/utils/cartStore';
-import { addDoc, collection, getDocs, orderBy, query, where } from 'firebase/firestore';
+import { db } from "@/services/firebase";
+import { CartItem } from "@/utils/cartStore";
+import {
+  addDoc,
+  collection,
+  getDocs,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore";
 
 export interface Order {
   id?: string;
@@ -16,15 +23,23 @@ export interface Order {
   tax: number;
   deliveryFee: number;
   total: number;
-  status: 'pending' | 'confirmed' | 'preparing' | 'delivering' | 'delivered' | 'cancelled';
+  status:
+    | "pending"
+    | "confirmed"
+    | "preparing"
+    | "delivering"
+    | "delivered"
+    | "cancelled";
   createdAt: number;
   updatedAt: number;
 }
 
 // Create new order
-export const createOrder = async (order: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
+export const createOrder = async (
+  order: Omit<Order, "id" | "createdAt" | "updatedAt">,
+): Promise<string> => {
   try {
-    const ordersCollection = collection(db, 'orders');
+    const ordersCollection = collection(db, "orders");
     const docRef = await addDoc(ordersCollection, {
       ...order,
       createdAt: Date.now(),
@@ -39,17 +54,20 @@ export const createOrder = async (order: Omit<Order, 'id' | 'createdAt' | 'updat
 // Get user orders
 export const getUserOrders = async (uid: string): Promise<Order[]> => {
   try {
-    const ordersCollection = collection(db, 'orders');
+    const ordersCollection = collection(db, "orders");
     const q = query(
       ordersCollection,
-      where('uid', '==', uid),
-      orderBy('createdAt', 'desc')
+      where("uid", "==", uid),
+      orderBy("createdAt", "desc"),
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    } as Order));
+    return querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        }) as Order,
+    );
   } catch (error: any) {
     throw new Error(error.message);
   }

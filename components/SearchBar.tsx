@@ -1,13 +1,8 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import React from 'react';
-import {
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View
-} from 'react-native';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
 interface SearchBarProps {
   value: string;
@@ -20,7 +15,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChangeText,
   onPress,
-  placeholder = 'Search for food...',
+  placeholder = "Search for food...",
 }) => {
   return (
     <View style={styles.container}>
@@ -39,7 +34,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
         onPress={onPress}
       />
       {value && (
-        <TouchableOpacity onPress={() => onChangeText('')}>
+        <TouchableOpacity onPress={() => onChangeText("")}>
           <MaterialIcons
             name="close"
             size={20}
@@ -54,8 +49,8 @@ export const SearchBar: React.FC<SearchBarProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.xl,
     marginHorizontal: SPACING.lg,

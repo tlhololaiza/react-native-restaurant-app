@@ -1,8 +1,9 @@
-import { CategoryTabs } from "@/components/CategoryTabs";
+import { CategoriesSection } from "@/components/CategoriesSection";
 import { FoodCard } from "@/components/FoodCard";
-import { SearchBar } from "@/components/SearchBar";
 import { getFoodItems } from "@/services/foodService";
+import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
+import { CATEGORIES } from "@/utils/categories";
 import { COLORS } from "@/utils/colors";
 import { initializeFirestoreData } from "@/utils/seedService";
 import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
@@ -19,18 +20,15 @@ import {
   View,
 } from "react-native";
 
-// Categories mapping with icons
-const CATEGORIES = [
-  { id: "burgers", name: "Burgers", icon: "burgers" },
-  { id: "pizza", name: "Pizza", icon: "pizza" },
-  { id: "chicken", name: "Chicken", icon: "chicken" },
-  { id: "desserts", name: "Desserts", icon: "desserts" },
-  { id: "drinks", name: "Drinks", icon: "drinks" },
-];
+// Categories mapping (imported from utils/categories)
 
 export default function HomeScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("burgers");
+  const { user, userProfile } = useAuthStore();
+  const userName = userProfile?.name
+    ? `${userProfile.name}${userProfile.surname ? ` ${userProfile.surname}` : ""}`
+    : (user?.displayName ?? "Guest");
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,9 +72,11 @@ export default function HomeScreen() {
   );
 
   const handleFoodPress = (id: string) => {
+    const item = foodItems.find((i) => i.id === id);
+    if (!item) return;
     router.push({
       pathname: "/(modal)/item-details",
-      params: { itemId: id },
+      params: { item: JSON.stringify(item) },
     });
   };
 
@@ -106,11 +106,17 @@ export default function HomeScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}</Text>
-            <View style={styles.locationRow}>
-              <MaterialIcons name="place" size={16} color={COLORS.white} />
-              <Text style={styles.location}>Deliver to Your Location</Text>
-            </View>
+            <Text style={styles.greeting}>
+              {getGreeting()}, {userName}!
+            </Text>
+            <Text style={styles.location}>
+              <MaterialIcons
+                name="location-on"
+                size={14}
+                color={COLORS.textLight}
+              />
+              {" 123 Main St, City"}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.cartIcon}
@@ -129,22 +135,12 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search burgers, pizza..."
-        />
-
         {/* Categories */}
-        <View style={styles.categoriesSection}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <CategoryTabs
-            categories={CATEGORIES}
-            activeCategory={activeCategory}
-            onCategoryChange={setActiveCategory}
-          />
-        </View>
+        <CategoriesSection
+          categories={CATEGORIES}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
 
         <Text style={styles.resultsTitle}>Popular Items</Text>
       </View>
@@ -234,12 +230,7 @@ const styles = StyleSheet.create({
   },
   location: {
     ...TYPOGRAPHY.caption,
-    color: "rgba(255, 255, 255, 0.85)",
-    marginLeft: SPACING.xs,
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    color: "rgba(255, 255, 255, 0.8)",
   },
   cartIcon: {
     position: "relative",

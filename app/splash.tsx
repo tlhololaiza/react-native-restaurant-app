@@ -1,8 +1,14 @@
-import { Button } from '@/components/Button';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { router } from 'expo-router';
-import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { Button } from "@/components/Button";
+import { COLORS } from "@/utils/colors";
+import {
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { router } from "expo-router";
+import { Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 export default function SplashScreen() {
   return (
@@ -11,7 +17,7 @@ export default function SplashScreen() {
         {/* Logo */}
         <View style={styles.logoContainer}>
           <Image
-            source={require('../assets/logo/logo.jpg')}
+            source={require("../assets/logo/logo.jpg")}
             style={styles.logoImage}
             resizeMode="cover"
           />
@@ -27,13 +33,13 @@ export default function SplashScreen() {
           title="Get Started"
           fullWidth
           size="lg"
-          onPress={() => router.push('/(auth)/login')}
+          onPress={() => router.push("/(auth)/login")}
         />
         <Text style={styles.loginText}>
-          Already have an account?{' '}
+          Already have an account?{" "}
           <Text
             style={styles.loginLink}
-            onPress={() => router.push('/(auth)/login')}
+            onPress={() => router.push("/(auth)/login")}
           >
             Login
           </Text>
@@ -56,12 +62,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     ...commonStyles.centered,
     marginBottom: SPACING.xl,
-    overflow: 'hidden',
+    overflow: "hidden",
     ...SHADOWS.lg,
   },
   logoImage: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   appName: {
     ...TYPOGRAPHY.h1,
@@ -70,8 +76,8 @@ const styles = StyleSheet.create({
   },
   tagline: {
     ...TYPOGRAPHY.subtitle,
-    color: 'rgba(255, 255, 255, 0.8)',
-    textAlign: 'center',
+    color: "rgba(255, 255, 255, 0.8)",
+    textAlign: "center",
   },
   buttonContainer: {
     marginBottom: SPACING.xl,
@@ -80,10 +86,10 @@ const styles = StyleSheet.create({
   loginText: {
     ...TYPOGRAPHY.body,
     color: COLORS.white,
-    textAlign: 'center',
+    textAlign: "center",
   },
   loginLink: {
-    fontWeight: '700',
-    textDecorationLine: 'underline',
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
 });

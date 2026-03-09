@@ -1,6 +1,5 @@
 import { COLORS } from "@/utils/colors";
 import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
-import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   ScrollView,
@@ -9,17 +8,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const ICON_MAP = {
-  burgers: "lunch-dining",
-  pizza: "local-pizza",
-  chicken: "set-meal",
-  desserts: "icecream",
-  drinks: "local-drink",
-  sides: "restaurant-menu",
-  mains: "restaurant",
-  starters: "emoji-food-beverage",
-} as const;
 
 interface CategoryTabsProps {
   categories: { id: string; name: string; icon?: keyof typeof ICON_MAP }[];
@@ -132,9 +120,6 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gray100,
     borderWidth: 1,
     borderColor: "transparent",
-    flexDirection: "row",
-    alignItems: "center",
-    gap: SPACING.sm,
   },
   gridTab: {
     flex: 1,
@@ -146,9 +131,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "transparent",
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: SPACING.sm,
   },
   tabActive: {
     backgroundColor: COLORS.primary,

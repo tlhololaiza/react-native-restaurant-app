@@ -31,11 +31,7 @@ export default function RegisterScreen() {
     surname: "",
     email: "",
     password: "",
-    address: "",
-    phone: "",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCVV: "",
+    confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -62,24 +58,10 @@ export default function RegisterScreen() {
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
-    if (!formData.address) newErrors.address = "Address is required";
-    if (!formData.phone) newErrors.phone = "Phone is required";
-    const numericCard = formData.cardNumber.replace(/\s+/g, "");
-    if (
-      formData.cardNumber &&
-      (numericCard.length < 12 || numericCard.length > 19)
-    ) {
-      newErrors.cardNumber = "Card number looks invalid";
-    }
-    if (
-      formData.cardExpiry &&
-      !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(formData.cardExpiry)
-    ) {
-      newErrors.cardExpiry = "Use MM/YY format";
-    }
-    if (formData.cardCVV && !/^\d{3,4}$/.test(formData.cardCVV)) {
-      newErrors.cardCVV = "CVV should be 3-4 digits";
-    }
+    if (!formData.confirmPassword)
+      newErrors.confirmPassword = "Please confirm your password";
+    else if (formData.password !== formData.confirmPassword)
+      newErrors.confirmPassword = "Passwords do not match";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -94,11 +76,10 @@ export default function RegisterScreen() {
       const user = await registerUser(formData.email, formData.password, {
         name: formData.name,
         surname: formData.surname,
-        phone: formData.phone,
-        address: formData.address,
-        cardNumber: formData.cardNumber,
-        cardExpiry: formData.cardExpiry || undefined,
-        cardCVV: formData.cardCVV || undefined,
+        // store empty placeholders for optional fields; user can add them in Profile
+        phone: "",
+        address: "",
+        cardNumber: "",
       });
 
       setUser(user);
@@ -164,7 +145,7 @@ export default function RegisterScreen() {
             <View style={styles.row}>
               <InputField
                 label="First Name"
-                placeholder="John"
+                placeholder="Tlholo"
                 value={formData.name}
                 onChangeText={(value) => updateForm("name", value)}
                 error={errors.name}
@@ -172,7 +153,7 @@ export default function RegisterScreen() {
               />
               <InputField
                 label="Last Name"
-                placeholder="Doe"
+                placeholder="Tshwane"
                 value={formData.surname}
                 onChangeText={(value) => updateForm("surname", value)}
                 error={errors.surname}
@@ -182,7 +163,7 @@ export default function RegisterScreen() {
 
             <InputField
               label="Email Address"
-              placeholder="john.doe@example.com"
+              placeholder="email@example.com"
               value={formData.email}
               onChangeText={(value) => updateForm("email", value)}
               keyboardType="email-address"
@@ -192,7 +173,7 @@ export default function RegisterScreen() {
 
             <InputField
               label="Password"
-              placeholder="Create a strong password"
+              placeholder="At least 6 characters"
               value={formData.password}
               onChangeText={(value) => updateForm("password", value)}
               secureTextEntry
@@ -202,34 +183,12 @@ export default function RegisterScreen() {
             <Text style={styles.sectionTitle}>Contact & Delivery</Text>
 
             <InputField
-              label="Delivery Address"
-              placeholder="123 Street Name, City"
-              value={formData.address}
-              onChangeText={(value) => updateForm("address", value)}
-              icon="location-on"
-              error={errors.address}
-            />
-
-            <InputField
-              label="Phone Number"
-              placeholder="+234 800 000 0000"
-              value={formData.phone}
-              onChangeText={(value) => updateForm("phone", value)}
-              keyboardType="phone-pad"
-              icon="phone"
-              error={errors.phone}
-            />
-
-            <Text style={styles.sectionTitle}>Payment (optional)</Text>
-
-            <InputField
-              label="Card Number"
-              placeholder="1234 5678 9012 3456"
-              value={formData.cardNumber}
-              onChangeText={(value) => updateForm("cardNumber", value)}
-              keyboardType="numeric"
-              icon="credit-card"
-              error={errors.cardNumber}
+              label="Confirm Password"
+              placeholder="Confirm your password"
+              value={formData.confirmPassword}
+              onChangeText={(value) => updateForm("confirmPassword", value)}
+              secureTextEntry
+              error={errors.confirmPassword}
             />
 
             <View style={styles.row}>

@@ -4,22 +4,23 @@ import { logoutUser, updateUserProfile } from "@/services/firebase";
 import { useAuthStore } from "@/utils/authStore";
 import { COLORS } from "@/utils/colors";
 import {
-  commonStyles,
-  RADIUS,
-  SHADOWS,
-  SPACING,
-  TYPOGRAPHY,
+    commonStyles,
+    RADIUS,
+    SHADOWS,
+    SPACING,
+    TYPOGRAPHY,
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function ProfileScreen() {
@@ -28,34 +29,33 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
-    name: userProfile?.name || "John",
-    surname: userProfile?.surname || "Doe",
-    email: userProfile?.email || "john.doe@example.com",
-    phone: userProfile?.phone || "+234 800 000 0000",
-    address: userProfile?.address || "123 Street Name, City",
-    cardNumber: userProfile?.cardNumber || "1234 5678 9012 3456",
-    cardExpiry: userProfile?.cardExpiry || "12/25",
-    cardCVC: userProfile?.cardCVV || "123",
+    name: userProfile?.name ?? user?.displayName ?? "",
+    surname: userProfile?.surname ?? "",
+    email: userProfile?.email ?? user?.email ?? "",
+    phone: userProfile?.phone ?? "",
+    address: userProfile?.address ?? "",
+    cardNumber: userProfile?.cardNumber ?? "",
+    cardExpiry: userProfile?.cardExpiry ?? "",
+    cardCVV: userProfile?.cardCVV ?? "",
   });
 
   const [editData, setEditData] = useState(profileData);
 
-  // Sync local state when store profile updates
+  // Keep local profile state in sync when auth store updates
   useEffect(() => {
-    if (!userProfile) return;
-    const next = {
-      name: userProfile.name,
-      surname: userProfile.surname,
-      email: userProfile.email,
-      phone: userProfile.phone,
-      address: userProfile.address,
-      cardNumber: userProfile.cardNumber,
-      cardExpiry: userProfile.cardExpiry || "",
-      cardCVC: userProfile.cardCVV || "",
+    const pd = {
+      name: userProfile?.name ?? user?.displayName ?? "",
+      surname: userProfile?.surname ?? "",
+      email: userProfile?.email ?? user?.email ?? "",
+      phone: userProfile?.phone ?? "",
+      address: userProfile?.address ?? "",
+      cardNumber: userProfile?.cardNumber ?? "",
+      cardExpiry: userProfile?.cardExpiry ?? "",
+      cardCVV: userProfile?.cardCVV ?? "",
     };
-    setProfileData(next);
-    setEditData(next);
-  }, [userProfile]);
+    setProfileData(pd);
+    setEditData(pd);
+  }, [userProfile, user]);
 
   // Check if user is authenticated
   useFocusEffect(
@@ -71,52 +71,57 @@ export default function ProfileScreen() {
   };
 
   const handleSaveChanges = async () => {
-    if (!user) return;
+    if (!user) {
+      Alert.alert("Not Logged In", "Please login to save your profile");
+      return;
+    }
 
+    Alert.alert("Saving", "Saving profile changes...");
     setLoading(true);
     setError(null);
     try {
-      await updateUserProfile(user.uid, {
+      const updates = {
         name: editData.name,
         surname: editData.surname,
         phone: editData.phone,
         address: editData.address,
         cardNumber: editData.cardNumber,
         cardExpiry: editData.cardExpiry,
-        cardCVV: editData.cardCVC,
-      });
+        cardCVV: editData.cardCVV,
+      };
 
-      setProfileData(editData);
-      setUserProfile(
-        userProfile
-          ? {
-              ...userProfile,
-              name: editData.name,
-              surname: editData.surname,
-              phone: editData.phone,
-              address: editData.address,
-              cardNumber: editData.cardNumber,
-              cardExpiry: editData.cardExpiry,
-              cardCVV: editData.cardCVC,
-            }
-          : {
-              uid: user.uid,
-              email: editData.email,
-              name: editData.name,
-              surname: editData.surname,
-              phone: editData.phone,
-              address: editData.address,
-              cardNumber: editData.cardNumber,
-              cardExpiry: editData.cardExpiry,
-              cardCVV: editData.cardCVC,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
-            },
-      );
+      const ok = await updateUserProfile(user.uid, updates);
+
+      if (!ok) {
+        throw new Error("Permission denied while updating profile");
+      }
+
+      // Build a full profile object to store in the auth store.
+      const updatedProfile = {
+        uid: user.uid,
+        email: user.email ?? editData.email,
+        name: editData.name,
+        surname: editData.surname,
+        phone: editData.phone ?? "",
+        address: editData.address ?? "",
+        cardNumber: editData.cardNumber ?? "",
+        cardHolder: userProfile?.cardHolder,
+        cardExpiry: editData.cardExpiry ?? "",
+        cardCVV: editData.cardCVV ?? "",
+        createdAt: userProfile?.createdAt ?? Date.now(),
+        updatedAt: Date.now(),
+      };
+
+      setProfileData(updatedProfile);
+      setUserProfile(updatedProfile as any);
       setIsEditing(false);
+      Alert.alert("Success", "Profile updated successfully");
     } catch (error) {
       console.error("Error updating profile:", error);
-      setError("Could not save changes. Please try again.");
+      Alert.alert(
+        "Save Failed",
+        (error as any)?.message || "Failed to save profile",
+      );
     } finally {
       setLoading(false);
     }
@@ -227,7 +232,13 @@ export default function ProfileScreen() {
                     style={{ marginBottom: SPACING.md }}
                   />
                   <Text style={styles.cardNumber}>
-                    {profileData.cardNumber}
+                    {profileData.cardNumber
+                      ? profileData.cardNumber
+                          .replace(/\s+/g, "")
+                          .replace(/.(?=.{4})/g, "*")
+                          .match(/.{1,4}/g)
+                          ?.join(" ")
+                      : ""}
                   </Text>
                   <View style={styles.cardDetails}>
                     <View>
@@ -353,8 +364,8 @@ export default function ProfileScreen() {
                 />
                 <InputField
                   label="CVC"
-                  value={editData.cardCVC}
-                  onChangeText={(value) => updateField("cardCVC", value)}
+                  value={editData.cardCVV}
+                  onChangeText={(value) => updateField("cardCVV", value)}
                   keyboardType="numeric"
                   style={styles.halfInput}
                 />

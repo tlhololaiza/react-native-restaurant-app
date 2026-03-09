@@ -1,17 +1,17 @@
-import { Button } from '@/components/Button';
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY, commonStyles } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import {
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View
-} from 'react-native';
+import { Button } from "@/components/Button";
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY, commonStyles } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 
 export default function OrderSuccessScreen() {
-  const { orderNumber } = useLocalSearchParams<{ orderNumber: string }>();
+  const { orderNumber, total } = useLocalSearchParams<{
+    orderNumber?: string;
+    total?: string;
+  }>();
+
+  const totalAmount = total ? Number(total) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -19,7 +19,11 @@ export default function OrderSuccessScreen() {
         {/* Success Animation */}
         <View style={styles.animationContainer}>
           <View style={styles.successIcon}>
-            <MaterialIcons name="check-circle" size={100} color={COLORS.primary} />
+            <MaterialIcons
+              name="check-circle"
+              size={100}
+              color={COLORS.primary}
+            />
           </View>
         </View>
 
@@ -33,7 +37,7 @@ export default function OrderSuccessScreen() {
         <View style={styles.orderDetailsCard}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Order Number</Text>
-            <Text style={styles.detailValue}>#{orderNumber || '12345678'}</Text>
+            <Text style={styles.detailValue}>#{orderNumber || "12345678"}</Text>
           </View>
 
           <View style={styles.divider} />
@@ -47,7 +51,9 @@ export default function OrderSuccessScreen() {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Total Amount</Text>
-            <Text style={styles.detailValue}>R4,000</Text>
+            <Text style={styles.detailValue}>
+              {`R${totalAmount.toLocaleString()}`}
+            </Text>
           </View>
         </View>
 
@@ -64,7 +70,11 @@ export default function OrderSuccessScreen() {
 
           <View style={styles.step}>
             <View style={styles.stepIcon}>
-              <MaterialIcons name="local-shipping" size={20} color={COLORS.primary} />
+              <MaterialIcons
+                name="local-shipping"
+                size={20}
+                color={COLORS.primary}
+              />
             </View>
             <Text style={styles.stepLabel}>Preparing</Text>
           </View>
@@ -73,7 +83,11 @@ export default function OrderSuccessScreen() {
 
           <View style={styles.step}>
             <View style={styles.stepIcon}>
-              <MaterialIcons name="pedal-bike" size={20} color={COLORS.primary} />
+              <MaterialIcons
+                name="pedal-bike"
+                size={20}
+                color={COLORS.primary}
+              />
             </View>
             <Text style={styles.stepLabel}>Delivering</Text>
           </View>
@@ -100,17 +114,8 @@ export default function OrderSuccessScreen() {
       {/* Buttons */}
       <View style={styles.bottomSection}>
         <Button
-          title="Track Order"
-          onPress={() => {
-            // TODO: Navigate to order tracking
-            router.replace('/(tabs)/home');
-          }}
-          fullWidth
-          size="lg"
-        />
-        <Button
           title="Return to Home"
-          onPress={() => router.replace('/(tabs)/home')}
+          onPress={() => router.replace("/(tabs)/home")}
           variant="outline"
           fullWidth
           size="lg"
@@ -129,10 +134,10 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.xl,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   animationContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: SPACING.xl,
   },
   successIcon: {
@@ -146,13 +151,13 @@ const styles = StyleSheet.create({
   title: {
     ...TYPOGRAPHY.h1,
     color: COLORS.text,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: SPACING.md,
   },
   subtitle: {
     ...TYPOGRAPHY.body,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: SPACING.xxxl,
   },
   orderDetailsCard: {
@@ -162,9 +167,9 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xl,
   },
   detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingVertical: SPACING.md,
   },
   detailLabel: {
@@ -180,14 +185,14 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.border,
   },
   stepsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: SPACING.xl,
     paddingHorizontal: SPACING.lg,
   },
   step: {
-    alignItems: 'center',
+    alignItems: "center",
     flex: 1,
   },
   stepIcon: {
@@ -205,7 +210,7 @@ const styles = StyleSheet.create({
   stepLabel: {
     ...TYPOGRAPHY.caption,
     color: COLORS.textLight,
-    textAlign: 'center',
+    textAlign: "center",
   },
   stepLine: {
     height: 2,
@@ -214,12 +219,12 @@ const styles = StyleSheet.create({
     marginHorizontal: -SPACING.sm,
   },
   infoCard: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.lg,
     gap: SPACING.md,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
   },
   infoText: {
     ...TYPOGRAPHY.caption,
