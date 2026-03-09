@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+# React Native Restaurant App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple restaurant ordering app built with Expo and React Native. Browse menu items by category, view item details (with extras and sides), add items to a cart, and place orders. Authentication and order persistence are handled with Firebase.
 
-## Get started
+## Features
+
+- Browse food items by category
+- View item details and select extras/sides
+- Add items to cart and update quantities
+- Checkout — orders saved to Firestore (`services/orderService.ts`)
+- Email/password auth and user profiles via Firebase (`services/firebase.ts`)
+- Local mock data fallback and seeding helper (`services/foodService.ts`, `utils/seedService.ts`)
+
+## Quick start
 
 1. Install dependencies
 
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
 2. Start the app
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
 ```bash
-npm run reset-project
+npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Then open the app in an emulator, simulator, or Expo Go.
 
-## Learn more
+## Project structure (high level)
 
-To learn more about developing your project with Expo, look at the following resources:
+- `app/` — route-based screens (tabs, auth, modals)
+- `components/` — reusable UI components (Button, FoodCard, SearchBar)
+- `context/` — providers (Auth)
+- `services/` — Firebase integration, food and order services
+- `utils/` — stores (`zustand`), theming, seed helpers
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Firebase
 
-## Join the community
+This project includes a sample Firebase config in `services/firebase.ts`. Replace the config with your own Firebase project for production use. The app uses Firestore to store user profiles and orders.
 
-Join our community of developers creating universal apps.
+## Notes for development
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- The app uses `zustand` for local state management (`utils/cartStore.ts`, `utils/authStore.ts`).
+- If Firestore is unavailable, the app falls back to mock data and includes a seeding helper (`utils/seedService.ts`).
+
+## Want help?
+
+If you want, I can:
+
+- Run the app locally (`npm install` then `npx expo start`)
+- Add a short CONTRIBUTING section or deployment notes
+- Create a Git commit for this README update
+
+---
+
+Generated/updated by project maintainer tools.
