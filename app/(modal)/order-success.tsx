@@ -5,11 +5,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import {
-    Dimensions,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    View
+  Dimensions,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 
 const { height, width } = Dimensions.get('window');
@@ -51,7 +51,7 @@ export default function OrderSuccessScreen() {
 
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Total Amount</Text>
-            <Text style={styles.detailValue}>₦4,000</Text>
+            <Text style={styles.detailValue}>R4,000</Text>
           </View>
         </View>
 
