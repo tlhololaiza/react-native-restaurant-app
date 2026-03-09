@@ -1,21 +1,25 @@
-import { Button } from '@/components/Button';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useState } from 'react';
+import { Button } from "@/components/Button";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
 import {
-    Dimensions,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-
-const { height } = Dimensions.get('window');
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
+} from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useState } from "react";
+import {
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 // Mock item data
 const FOOD_DATA: Record<
@@ -30,23 +34,25 @@ const FOOD_DATA: Record<
     reviews: number;
   }
 > = {
-  '1': {
-    id: '1',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop',
-    name: 'Classic Burger',
-    price: 2500,
+  "1": {
+    id: "1",
+    image:
+      "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=500&fit=crop",
+    name: "Classic Burger",
+    price: 89,
     description:
-      'A delicious classic burger with fresh beef, crispy lettuce, tomato, and our signature sauce on a toasted bun.',
+      "A delicious classic burger with fresh beef, crispy lettuce, tomato, and our signature sauce on a toasted bun.",
     rating: 4.5,
     reviews: 234,
   },
-  '2': {
-    id: '2',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=500&fit=crop',
-    name: 'Margarita Pizza',
-    price: 3500,
+  "2": {
+    id: "2",
+    image:
+      "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=500&fit=crop",
+    name: "Margarita Pizza",
+    price: 129,
     description:
-      'Traditional Italian pizza with fresh mozzarella, basil, and tomato sauce on a thin crispy crust.',
+      "Traditional Italian pizza with fresh mozzarella, basil, and tomato sauce on a thin crispy crust.",
     rating: 4.7,
     reviews: 156,
   },
@@ -54,47 +60,75 @@ const FOOD_DATA: Record<
 
 export default function ItemDetailsScreen() {
   const { itemId } = useLocalSearchParams<{ itemId: string }>();
-  const item = itemId ? FOOD_DATA[itemId] : FOOD_DATA['1'];
+  const fallbackItem = FOOD_DATA["1"];
+  const item = (itemId && FOOD_DATA[itemId]) || fallbackItem;
+  const { addItem } = useCartStore();
 
   const [quantity, setQuantity] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [selectedSide, setSelectedSide] = useState<string>("s1");
+  const [selectedDrink, setSelectedDrink] = useState<string>("d1");
 
   const EXTRAS = [
-    { id: '1', name: 'Extra Cheese', price: 200 },
-    { id: '2', name: 'Bacon', price: 300 },
-    { id: '3', name: 'Mushrooms', price: 150 },
-    { id: '4', name: 'Onions', price: 100 },
+    { id: "1", name: "Extra Cheese", price: 10 },
+    { id: "2", name: "Bacon", price: 15 },
+    { id: "3", name: "Mushrooms", price: 20 },
+    { id: "4", name: "Onions", price: 5 },
   ];
 
   const SIDES = [
-    { id: 's1', name: 'French Fries', price: 500 },
-    { id: 's2', name: 'Coleslaw', price: 300 },
-    { id: 's3', name: 'Jalapeño Poppers', price: 400 },
+    { id: "s1", name: "Regular Fries", price: 0 },
+    { id: "s2", name: "Sweet Potato Fries", price: 10 },
+    { id: "s3", name: "Onion Rings", price: 15 },
+    { id: "s4", name: "Side Salad", price: 0 },
+  ];
+
+  const DRINKS = [
+    { id: "d1", name: "Coca-Cola", price: 0 },
+    { id: "d2", name: "Fanta", price: 0 },
+    { id: "d3", name: "Sprite", price: 0 },
+    { id: "d4", name: "Water", price: 0 },
   ];
 
   const toggleExtra = (extraId: string) => {
     setSelectedExtras((prev) =>
-      prev.includes(extraId) ? prev.filter((id) => id !== extraId) : [...prev, extraId]
+      prev.includes(extraId)
+        ? prev.filter((id) => id !== extraId)
+        : [...prev, extraId],
     );
   };
 
   const extrasTotal = selectedExtras.reduce((sum, id) => {
-    const extra = [...EXTRAS, ...SIDES].find((e) => e.id === id);
+    const extra = EXTRAS.find((e) => e.id === id);
     return sum + (extra?.price || 0);
   }, 0);
 
-  const totalPrice = (item.price + extrasTotal) * quantity;
+  const sidePrice = SIDES.find((s) => s.id === selectedSide)?.price ?? 0;
+  const drinkPrice = DRINKS.find((d) => d.id === selectedDrink)?.price ?? 0;
+
+  const totalPrice =
+    ((item?.price ?? 0) + extrasTotal + sidePrice + drinkPrice) * quantity;
 
   const handleAddToCart = () => {
-    // TODO: Add to cart logic
-    router.back();
-  };
+    const selectedExtrasData = selectedExtras
+      .map((id) => [...EXTRAS, ...SIDES].find((e) => e.id === id))
+      .filter(
+        (e): e is { id: string; name: string; price: number } =>
+          e !== undefined,
+      );
 
-  const handleEditExtras = () => {
-    router.push({
-      pathname: '/(modal)/edit-extras',
-      params: { itemId: item.id },
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity,
+      image: item.image,
+      extras: selectedExtrasData.length > 0 ? selectedExtrasData : undefined,
+      sides: SIDES.find((s) => s.id === selectedSide)?.name,
+      drink: DRINKS.find((d) => d.id === selectedDrink)?.name,
     });
+
+    router.back();
   };
 
   return (
@@ -168,9 +202,19 @@ export default function ItemDetailsScreen() {
                 style={styles.optionItem}
                 onPress={() => toggleExtra(extra.id)}
               >
-                <View style={styles.optionCheckbox}>
+                <View
+                  style={[
+                    styles.optionCheckbox,
+                    selectedExtras.includes(extra.id) &&
+                      styles.optionCheckboxFilled,
+                  ]}
+                >
                   {selectedExtras.includes(extra.id) && (
-                    <MaterialIcons name="check" size={16} color={COLORS.white} />
+                    <MaterialIcons
+                      name="check"
+                      size={16}
+                      color={COLORS.white}
+                    />
                   )}
                 </View>
                 <View style={{ flex: 1 }}>
@@ -188,17 +232,57 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity
                 key={side.id}
                 style={styles.optionItem}
-                onPress={() => toggleExtra(side.id)}
+                onPress={() => setSelectedSide(side.id)}
               >
-                <View style={styles.optionCheckbox}>
-                  {selectedExtras.includes(side.id) && (
-                    <MaterialIcons name="check" size={16} color={COLORS.white} />
-                  )}
-                </View>
+                <MaterialIcons
+                  name={
+                    selectedSide === side.id
+                      ? "radio-button-checked"
+                      : "radio-button-unchecked"
+                  }
+                  size={22}
+                  color={
+                    selectedSide === side.id ? COLORS.primary : COLORS.gray400
+                  }
+                  style={styles.optionRadio}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionName}>{side.name}</Text>
                 </View>
-                <Text style={styles.optionPrice}>+R{side.price}</Text>
+                {side.price > 0 && (
+                  <Text style={styles.optionPrice}>+R{side.price}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Drinks Section */}
+          <View style={styles.optionsSection}>
+            <Text style={styles.sectionTitle}>Choose a Drink</Text>
+            {DRINKS.map((drink) => (
+              <TouchableOpacity
+                key={drink.id}
+                style={styles.optionItem}
+                onPress={() => setSelectedDrink(drink.id)}
+              >
+                <MaterialIcons
+                  name={
+                    selectedDrink === drink.id
+                      ? "radio-button-checked"
+                      : "radio-button-unchecked"
+                  }
+                  size={22}
+                  color={
+                    selectedDrink === drink.id ? COLORS.primary : COLORS.gray400
+                  }
+                  style={styles.optionRadio}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.optionName}>{drink.name}</Text>
+                </View>
+                {drink.price > 0 && (
+                  <Text style={styles.optionPrice}>+R{drink.price}</Text>
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -214,7 +298,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -225,7 +309,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -236,7 +320,7 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity style={styles.suggestedCard}>
                 <Image
                   source={{
-                    uri: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop',
+                    uri: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop",
                   }}
                   style={styles.suggestedImage}
                 />
@@ -267,9 +351,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
     borderBottomColor: COLORS.border,
@@ -283,26 +367,26 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   imageContainer: {
-    width: '100%',
-    height: height * 0.35,
+    width: "100%",
+    height: 280,
     backgroundColor: COLORS.white,
-    position: 'relative',
+    position: "relative",
     marginBottom: SPACING.lg,
   },
   image: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
   ratingBadge: {
-    position: 'absolute',
+    position: "absolute",
     bottom: SPACING.lg,
     right: SPACING.lg,
     backgroundColor: COLORS.gray900,
     borderRadius: RADIUS.lg,
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
   },
   ratingText: {
@@ -335,9 +419,9 @@ const styles = StyleSheet.create({
     padding: SPACING.lg,
     marginBottom: SPACING.lg,
     ...SHADOWS.sm,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   priceLabel: {
     ...TYPOGRAPHY.subtitle,
@@ -346,7 +430,7 @@ const styles = StyleSheet.create({
   price: {
     ...TYPOGRAPHY.h3,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   quantitySection: {
     marginBottom: SPACING.xl,
@@ -357,8 +441,8 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.md,
   },
   quantityControl: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -372,14 +456,14 @@ const styles = StyleSheet.create({
     ...TYPOGRAPHY.h4,
     color: COLORS.text,
     minWidth: 40,
-    textAlign: 'center',
+    textAlign: "center",
   },
   optionsSection: {
     marginBottom: SPACING.xl,
   },
   optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: COLORS.white,
     borderRadius: RADIUS.lg,
     padding: SPACING.md,
@@ -403,7 +487,7 @@ const styles = StyleSheet.create({
   optionPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   suggestedSection: {
     marginBottom: SPACING.xl,
@@ -414,7 +498,7 @@ const styles = StyleSheet.create({
   },
   suggestedCard: {
     marginRight: SPACING.lg,
-    alignItems: 'center',
+    alignItems: "center",
   },
   suggestedImage: {
     width: 120,
@@ -429,7 +513,7 @@ const styles = StyleSheet.create({
   suggestedPrice: {
     ...TYPOGRAPHY.subtitle,
     color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   bottomSection: {
     paddingHorizontal: SPACING.lg,

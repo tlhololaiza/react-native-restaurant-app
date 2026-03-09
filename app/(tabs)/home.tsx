@@ -1,113 +1,104 @@
-import { CategoryTabs } from '@/components/CategoryTabs';
-import { FoodCard } from '@/components/FoodCard';
-import { SearchBar } from '@/components/SearchBar';
-import { COLORS } from '@/utils/colors';
-import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { CategoryTabs } from "@/components/CategoryTabs";
+import { FoodCard } from "@/components/FoodCard";
+import { SearchBar } from "@/components/SearchBar";
+import { getFoodItems } from "@/services/foodService";
+import { useCartStore } from "@/utils/cartStore";
+import { COLORS } from "@/utils/colors";
+import { initializeFirestoreData } from "@/utils/seedService";
+import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import { useEffect, useState } from "react";
 import {
-  Dimensions,
+  ActivityIndicator,
   FlatList,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-} from 'react-native';
+} from "react-native";
 
-const { width } = Dimensions.get('window');
-
-// Mock data
+// Categories mapping with icons
 const CATEGORIES = [
-  { id: '1', name: 'Burgers' },
-  { id: '2', name: 'Pizza' },
-  { id: '3', name: 'Chicken' },
-  { id: '4', name: 'Desserts' },
-  { id: '5', name: 'Drinks' },
-];
-
-const FOOD_ITEMS = [
-  {
-    id: '1',
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-    name: 'Classic Burger',
-    price: 89,
-    rating: 4.5,
-    category: '1',
-  },
-  {
-    id: '2',
-    image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400&h=300&fit=crop',
-    name: 'Margarita Pizza',
-    price: 129,
-    rating: 4.7,
-    category: '2',
-  },
-  {
-    id: '3',
-    image: 'https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=400&h=300&fit=crop',
-    name: 'Spicy Fried Chicken',
-    price: 99,
-    rating: 4.6,
-    category: '3',
-  },
-  {
-    id: '4',
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-    name: 'Chocolate Cake',
-    price: 59,
-    rating: 4.8,
-    category: '4',
-  },
-  {
-    id: '5',
-    image: 'https://images.unsplash.com/photo-1599599810694-f3f465b6ee0d?w=400&h=300&fit=crop',
-    name: 'Fresh Juice',
-    price: 29,
-    rating: 4.4,
-    category: '5',
-  },
-  {
-    id: '6',
-    image: 'https://images.unsplash.com/photo-1571115764595-644a12c7cb72?w=400&h=300&fit=crop',
-    name: 'Double Cheeseburger',
-    price: 119,
-    rating: 4.6,
-    category: '1',
-  },
+  { id: "burgers", name: "Burgers", icon: "burgers" },
+  { id: "pizza", name: "Pizza", icon: "pizza" },
+  { id: "chicken", name: "Chicken", icon: "chicken" },
+  { id: "desserts", name: "Desserts", icon: "desserts" },
+  { id: "drinks", name: "Drinks", icon: "drinks" },
 ];
 
 export default function HomeScreen() {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('1');
-  const [cartCount, setCartCount] = useState(0);
-  const [userName] = useState('John'); // This would come from auth context in production
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("burgers");
+  const [foodItems, setFoodItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { addItem, getItemCount } = useCartStore();
+  const cartCount = getItemCount();
 
-  const filteredItems = FOOD_ITEMS.filter(
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        console.log("HomeScreen: Starting data load...");
+        setLoading(true);
+        setError(null);
+
+        await initializeFirestoreData();
+        console.log("HomeScreen: Fetching food items...");
+        const items = await getFoodItems();
+        console.log("HomeScreen: Fetched items:", items.length, items);
+
+        if (items && items.length > 0) {
+          setFoodItems(items);
+          console.log("HomeScreen: Items set successfully");
+        } else {
+          setError("No food items available");
+        }
+      } catch (error) {
+        console.error("HomeScreen: Error loading food items:", error);
+        setError("Failed to load menu items");
+      } finally {
+        setLoading(false);
+        console.log("HomeScreen: Loading complete");
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const filteredItems = foodItems.filter(
     (item) =>
       item.category === activeCategory &&
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleFoodPress = (id: string) => {
     router.push({
-      pathname: '/(modal)/item-details',
+      pathname: "/(modal)/item-details",
       params: { itemId: id },
     });
   };
 
   const handleAddToCart = (itemId: string) => {
-    setCartCount((prev) => prev + 1);
-    // TODO: Add item to cart context/state
+    const item = foodItems.find((i) => i.id === itemId);
+    if (item) {
+      addItem({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: 1,
+        image: item.image,
+      });
+    }
   };
 
   const renderHeader = () => {
     const getGreeting = () => {
       const hour = new Date().getHours();
-      if (hour < 12) return 'Good Morning';
-      if (hour < 18) return 'Good Afternoon';
-      return 'Good Evening';
+      if (hour < 12) return "Good Morning";
+      if (hour < 18) return "Good Afternoon";
+      return "Good Evening";
     };
 
     return (
@@ -115,44 +106,84 @@ export default function HomeScreen() {
         {/* Header Bar */}
         <View style={styles.headerBar}>
           <View>
-            <Text style={styles.greeting}>{getGreeting()}, {userName}!</Text>
-            <Text style={styles.location}>
-              <MaterialIcons name="location-on" size={14} color={COLORS.textLight} />
-              {' 123 Main St, City'}
-            </Text>
-          </View>
-        <TouchableOpacity
-          style={styles.cartIcon}
-          onPress={() => router.push('/(tabs)/cart')}
-        >
-          <MaterialIcons name="shopping-cart" size={24} color={COLORS.white} />
-          {cartCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>{cartCount}</Text>
+            <Text style={styles.greeting}>{getGreeting()}</Text>
+            <View style={styles.locationRow}>
+              <MaterialIcons name="place" size={16} color={COLORS.white} />
+              <Text style={styles.location}>Deliver to Your Location</Text>
             </View>
-          )}
-        </TouchableOpacity>
-      </View>
+          </View>
+          <TouchableOpacity
+            style={styles.cartIcon}
+            onPress={() => router.push("/(tabs)/cart")}
+          >
+            <MaterialIcons
+              name="shopping-cart"
+              size={24}
+              color={COLORS.white}
+            />
+            {cartCount > 0 && (
+              <View style={styles.cartBadge}>
+                <Text style={styles.cartBadgeText}>{cartCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
 
-      {/* Search Bar */}
-      <SearchBar
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        placeholder="Search burgers, pizza..."
-      />
-
-      {/* Categories */}
-      <View style={styles.categoriesSection}>
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <CategoryTabs
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
+        {/* Search Bar */}
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search burgers, pizza..."
         />
-      </View>
 
-      <Text style={styles.resultsTitle}>Popular Items</Text>
-    </View>
+        {/* Categories */}
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <CategoryTabs
+            categories={CATEGORIES}
+            activeCategory={activeCategory}
+            onCategoryChange={setActiveCategory}
+          />
+        </View>
+
+        <Text style={styles.resultsTitle}>Popular Items</Text>
+      </View>
+    );
+  };
+
+  const renderEmptyState = () => {
+    if (loading) {
+      return (
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+          <Text style={styles.emptyText}>Loading delicious items...</Text>
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View style={styles.emptyContainer}>
+          <MaterialIcons name="error-outline" size={64} color={COLORS.error} />
+          <Text style={styles.emptyTitle}>Oops!</Text>
+          <Text style={styles.emptySubtitle}>{error}</Text>
+          <Text style={styles.emptyHint}>
+            Using local menu data. Firestore might be blocked by ad blocker.
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.emptyContainer}>
+        <MaterialIcons name="restaurant" size={64} color={COLORS.gray300} />
+        <Text style={styles.emptyTitle}>No items found</Text>
+        <Text style={styles.emptySubtitle}>
+          {searchQuery
+            ? "Try searching for something else"
+            : "No items in this category yet"}
+        </Text>
+      </View>
     );
   };
 
@@ -175,8 +206,11 @@ export default function HomeScreen() {
         )}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={styles.columnWrapper}
+        columnWrapperStyle={
+          filteredItems.length > 0 ? styles.columnWrapper : undefined
+        }
         ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmptyState}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -186,9 +220,9 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   headerBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     backgroundColor: COLORS.primary,
     padding: SPACING.lg,
     paddingTop: 0,
@@ -200,14 +234,19 @@ const styles = StyleSheet.create({
   },
   location: {
     ...TYPOGRAPHY.caption,
-    color: 'rgba(255, 255, 255, 0.8)',
+    color: "rgba(255, 255, 255, 0.85)",
+    marginLeft: SPACING.xs,
+  },
+  locationRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   cartIcon: {
-    position: 'relative',
+    position: "relative",
     padding: SPACING.md,
   },
   cartBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 8,
     right: 8,
     backgroundColor: COLORS.error,
@@ -243,10 +282,41 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxxl,
   },
   columnWrapper: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
     paddingHorizontal: SPACING.lg,
   },
   foodCardWrapper: {
     flex: 1,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: SPACING.xxxl,
+    paddingHorizontal: SPACING.lg,
+    minHeight: 300,
+  },
+  emptyText: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textLight,
+    marginTop: SPACING.md,
+  },
+  emptyTitle: {
+    ...TYPOGRAPHY.h3,
+    color: COLORS.text,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  emptySubtitle: {
+    ...TYPOGRAPHY.body,
+    color: COLORS.textLight,
+    textAlign: "center",
+  },
+  emptyHint: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.gray400,
+    textAlign: "center",
+    marginTop: SPACING.md,
+    fontStyle: "italic",
   },
 });

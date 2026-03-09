@@ -1,51 +1,85 @@
 import { Button } from '@/components/Button';
 import { InputField } from '@/components/InputField';
+import { createOrder } from '@/services/orderService';
+import { useAuthStore } from '@/utils/authStore';
+import { useCartStore } from '@/utils/cartStore';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { MaterialIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-}
-
-const MOCK_CART_ITEMS: CartItem[] = [
-  { id: '1', name: 'Classic Burger', price: 2500, quantity: 2 },
-  { id: '2', name: 'Margarita Pizza', price: 3500, quantity: 1 },
-];
-
 export default function CheckoutScreen() {
-  const [deliveryAddress, setDeliveryAddress] = useState('123 Main St, City');
+  const { user, userProfile } = useAuthStore();
+  const { items, clearCart, getTotal } = useCartStore();
+  const [deliveryAddress, setDeliveryAddress] = useState(userProfile?.address || '123 Main St, City');
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const subtotal = MOCK_CART_ITEMS.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const deliveryFee = 500;
+  // Check if user is authenticated
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) {
+        Alert.alert(
+          'Login Required',
+          'Please login or register to place an order',
+          [
+            { text: 'Cancel', onPress: () => router.back(), style: 'cancel' },
+            { text: 'Login', onPress: () => router.push('/(auth)/login') },
+          ]
+        );
+      }
+    }, [user])
+  );
+
+  const subtotal = getTotal();
+  const deliveryFee = 50;
   const tax = Math.floor(subtotal * 0.05);
   const total = subtotal + deliveryFee + tax;
 
   const handlePlaceOrder = async () => {
+    if (!user || !userProfile) {
+      Alert.alert('Error', 'Please login to place an order');
+      router.push('/(auth)/login');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate order placement
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const orderId = await createOrder({
+        uid: user.uid,
+        userName: userProfile.name,
+        userSurname: userProfile.surname,
+        userEmail: userProfile.email,
+        userPhone: userProfile.phone,
+        deliveryAddress,
+        cardNumber: userProfile.cardNumber,
+        items,
+        subtotal,
+        tax,
+        deliveryFee,
+        total,
+        status: 'pending',
+      });
+
+      clearCart();
+      
       router.push({
         pathname: '/(modal)/order-success',
-        params: { orderNumber: '12345678' },
+        params: { orderNumber: orderId },
       });
+    } catch {
+      Alert.alert('Error', 'Failed to place order. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -177,7 +211,7 @@ export default function CheckoutScreen() {
           <Text style={styles.sectionTitle}>Order Summary</Text>
           
           <View style={styles.summaryCard}>
-            {MOCK_CART_ITEMS.map((item) => (
+            {items.map((item) => (
               <View key={item.id} style={styles.summaryItem}>
                 <Text style={styles.summaryItemName}>
                   {item.name} x{item.quantity}

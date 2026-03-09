@@ -2,7 +2,6 @@ import { Button } from '@/components/Button';
 import { COLORS } from '@/utils/colors';
 import { commonStyles, RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from '@/utils/theme';
 import { router } from 'expo-router';
-import React from 'react';
 import { Image, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 export default function SplashScreen() {

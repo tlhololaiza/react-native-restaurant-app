@@ -1,16 +1,28 @@
-import { COLORS } from '@/utils/colors';
-import { RADIUS, SPACING, TYPOGRAPHY } from '@/utils/theme';
-import React from 'react';
+import { COLORS } from "@/utils/colors";
+import { RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
+import { MaterialIcons } from "@expo/vector-icons";
+import React from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
-} from 'react-native';
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+
+const ICON_MAP = {
+  burgers: "lunch-dining",
+  pizza: "local-pizza",
+  chicken: "set-meal",
+  desserts: "icecream",
+  drinks: "local-drink",
+  sides: "restaurant-menu",
+  mains: "restaurant",
+  starters: "emoji-food-beverage",
+} as const;
 
 interface CategoryTabsProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; icon?: keyof typeof ICON_MAP }[];
   activeCategory: string;
   onCategoryChange: (categoryId: string) => void;
   horizontal?: boolean;
@@ -39,6 +51,16 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
             ]}
             onPress={() => onCategoryChange(category.id)}
           >
+            {category.icon && (
+              <MaterialIcons
+                name={ICON_MAP[category.icon] ?? "restaurant"}
+                size={18}
+                color={
+                  activeCategory === category.id ? COLORS.white : COLORS.text
+                }
+                style={styles.tabIcon}
+              />
+            )}
             <Text
               style={[
                 styles.tabText,
@@ -64,6 +86,16 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
           ]}
           onPress={() => onCategoryChange(category.id)}
         >
+          {category.icon && (
+            <MaterialIcons
+              name={ICON_MAP[category.icon] ?? "restaurant"}
+              size={18}
+              color={
+                activeCategory === category.id ? COLORS.white : COLORS.text
+              }
+              style={styles.tabIcon}
+            />
+          )}
           <Text
             style={[
               styles.tabText,
@@ -87,8 +119,8 @@ const styles = StyleSheet.create({
     gap: SPACING.md,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     paddingHorizontal: SPACING.lg,
     gap: SPACING.md,
     marginVertical: SPACING.md,
@@ -99,18 +131,24 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.xl,
     backgroundColor: COLORS.gray100,
     borderWidth: 1,
-    borderColor: 'transparent',
+    borderColor: "transparent",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: SPACING.sm,
   },
   gridTab: {
     flex: 1,
-    minWidth: '45%',
+    minWidth: "45%",
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.md,
     borderRadius: RADIUS.md,
     backgroundColor: COLORS.gray100,
     borderWidth: 1,
-    borderColor: 'transparent',
-    alignItems: 'center',
+    borderColor: "transparent",
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: SPACING.sm,
   },
   tabActive: {
     backgroundColor: COLORS.primary,
@@ -122,5 +160,8 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: COLORS.white,
+  },
+  tabIcon: {
+    marginRight: 0,
   },
 });
