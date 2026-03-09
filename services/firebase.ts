@@ -1,36 +1,17 @@
-import { initializeApp } from "firebase/app";
-import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  User,
-} from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  getDocFromCache,
-  getFirestore,
-  setDoc,
-} from "firebase/firestore";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyBRDKvW53eWpWFypuip5fQ6wWCtF_tb_pM",
-  authDomain: "foodhub-fe8b2.firebaseapp.com",
-  projectId: "foodhub-fe8b2",
-  storageBucket: "foodhub-fe8b2.firebasestorage.app",
-  messagingSenderId: "655381628782",
-  appId: "1:655381628782:web:0c211d4ed950ea83d2e37f",
+const KEY_USERS = "@foodhub:users";
+const KEY_AUTH = "@foodhub:auth";
+const KEY_ORDERS = "@foodhub:orders";
+const KEY_FOODS = "@foodhub:foods";
+
+// Minimal user type used throughout the app (replaces firebase.User)
+export type User = {
+  uid: string;
+  email?: string | null;
+  displayName?: string | null;
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
-// User profile type
 export interface UserProfile {
   uid: string;
   email: string;
@@ -46,158 +27,142 @@ export interface UserProfile {
   updatedAt: number;
 }
 
-// Register user with email and password
+type StoredUserRecord = {
+  uid: string;
+  email: string;
+  password: string;
+  profile: UserProfile;
+};
+
+let authListeners: Array<(u: User | null) => void> = [];
+
+const notifyAuthChange = (user: User | null) => {
+  authListeners.forEach((cb) => cb(user));
+};
+
+const readJson = async <T>(key: string, fallback: T): Promise<T> => {
+  try {
+    const raw = await AsyncStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+};
+
+const writeJson = async (key: string, value: any) => {
+  await AsyncStorage.setItem(key, JSON.stringify(value));
+};
+
+// Register a new user (stores credentials + profile in AsyncStorage)
 export const registerUser = async (
   email: string,
   password: string,
   userData: Omit<UserProfile, "uid" | "createdAt" | "updatedAt" | "email">,
 ): Promise<User> => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-    const user = userCredential.user;
+  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
 
-    // Update Firebase auth profile
-    await updateProfile(user, {
-      displayName: `${userData.name} ${userData.surname}`,
-    });
+  // Prevent duplicate email
+  const exists = Object.values(users).find((u) => u.email === email);
+  if (exists) throw new Error("Email already in use");
 
-    // Store user profile in Firestore
-    const userProfile: UserProfile = {
-      uid: user.uid,
-      email: user.email || email,
-      ...userData,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    };
+  const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  const profile: UserProfile = {
+    uid,
+    email,
+    ...userData,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  };
 
-    await setDoc(doc(db, "users", user.uid), userProfile);
+  users[uid] = {
+    uid,
+    email,
+    password,
+    profile,
+  };
 
-    return user;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  await writeJson(KEY_USERS, users);
+
+  const user: User = {
+    uid,
+    email,
+    displayName: `${userData.name} ${userData.surname}`,
+  };
+  await writeJson(KEY_AUTH, user);
+  notifyAuthChange(user);
+  return user;
 };
 
-// Login user with email and password
+// Login with email + password
 export const loginUser = async (
   email: string,
   password: string,
 ): Promise<User> => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password,
-    );
-    return userCredential.user;
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
+  const found = Object.values(users).find(
+    (u) => u.email === email && u.password === password,
+  );
+  if (!found) throw new Error("Invalid email or password");
+
+  const user: User = {
+    uid: found.uid,
+    email: found.email,
+    displayName: `${found.profile.name} ${found.profile.surname}`,
+  };
+  await writeJson(KEY_AUTH, user);
+  notifyAuthChange(user);
+  return user;
 };
 
-// Logout user
 export const logoutUser = async (): Promise<void> => {
-  try {
-    await signOut(auth);
-  } catch (error: any) {
-    throw new Error(error.message);
-  }
+  await AsyncStorage.removeItem(KEY_AUTH);
+  notifyAuthChange(null);
 };
 
-// Get user profile from Firestore
 export const getUserProfile = async (
   uid: string,
 ): Promise<UserProfile | null> => {
-  try {
-    const docRef = doc(db, "users", uid);
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? (docSnap.data() as UserProfile) : null;
-  } catch (error: any) {
-    // If Firestore thinks the client is offline, try to read from cache as a fallback.
-    if (
-      error &&
-      typeof error.message === "string" &&
-      error.message.toLowerCase().includes("client is offline")
-    ) {
-      try {
-        const docRef = doc(db, "users", uid);
-        const cachedSnap = await getDocFromCache(docRef);
-        return cachedSnap.exists() ? (cachedSnap.data() as UserProfile) : null;
-      } catch {
-        // Can't read from cache (likely unsupported in this environment) — return null quietly.
-        return null;
-      }
-    }
-
-    // Handle permission errors more gracefully: return null instead of throwing
-    // so callers can proceed (e.g., show login or limited UI) without crashing.
-    const msg = error?.message || "";
-    const code = error?.code || "";
-    if (
-      msg.toLowerCase().includes("missing or insufficient permissions") ||
-      msg.toLowerCase().includes("permission-denied") ||
-      code === "permission-denied"
-    ) {
-      console.warn(
-        "Firestore permission denied when reading user profile:",
-        error,
-      );
-      return null;
-    }
-
-    throw new Error(msg);
-  }
+  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
+  const found = users[uid];
+  return found ? found.profile : null;
 };
 
-// Update user profile
 export const updateUserProfile = async (
   uid: string,
   updates: Partial<UserProfile>,
 ): Promise<boolean> => {
-  try {
-    const docRef = doc(db, "users", uid);
-    // Use setDoc with merge to create the document if it doesn't exist
-    // and update the provided fields atomically.
-    await setDoc(
-      docRef,
-      {
-        ...updates,
-        updatedAt: Date.now(),
-      },
-      { merge: true },
-    );
+  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
+  const found = users[uid];
+  if (!found) return false;
 
-    return true;
-  } catch (error: any) {
-    const msg = error?.message || "";
-    const code = error?.code || "";
+  found.profile = {
+    ...found.profile,
+    ...updates,
+    updatedAt: Date.now(),
+  };
 
-    if (
-      msg.toLowerCase().includes("missing or insufficient permissions") ||
-      msg.toLowerCase().includes("permission-denied") ||
-      code === "permission-denied"
-    ) {
-      console.warn(
-        "Firestore permission denied when updating user profile:",
-        error,
-      );
-      return false;
-    }
-
-    throw new Error(msg);
-  }
+  users[uid] = found;
+  await writeJson(KEY_USERS, users);
+  return true;
 };
 
-// Get current authenticated user
-export const getCurrentUser = (): User | null => {
-  return auth.currentUser;
+export const getCurrentUser = async (): Promise<User | null> => {
+  return readJson<User | null>(KEY_AUTH, null);
 };
 
-// Subscribe to auth state changes
 export const onAuthStateChanged = (callback: (user: User | null) => void) => {
-  return auth.onAuthStateChanged(callback);
+  authListeners.push(callback);
+  // Immediately call with current user
+  readJson<User | null>(KEY_AUTH, null).then((u) => callback(u));
+  return () => {
+    authListeners = authListeners.filter((cb) => cb !== callback);
+  };
+};
+
+// Export storage keys for other services that need them
+export const _storageKeys = {
+  KEY_USERS,
+  KEY_AUTH,
+  KEY_ORDERS,
+  KEY_FOODS,
 };

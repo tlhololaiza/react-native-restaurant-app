@@ -1,9 +1,8 @@
-import { CategoriesSection } from "@/components/CategoriesSection";
+// categories removed from home — show all foods
 import { FoodCard } from "@/components/FoodCard";
 import { getFoodItems } from "@/services/foodService";
 import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
-import { CATEGORIES } from "@/utils/categories";
 import { COLORS } from "@/utils/colors";
 import { initializeFirestoreData } from "@/utils/seedService";
 import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
@@ -23,8 +22,7 @@ import {
 // Categories mapping (imported from utils/categories)
 
 export default function HomeScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("burgers");
+  // removed search and category filter; show all foods
   const { user, userProfile } = useAuthStore();
   const userName = userProfile?.name
     ? `${userProfile.name}${userProfile.surname ? ` ${userProfile.surname}` : ""}`
@@ -65,11 +63,7 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  const filteredItems = foodItems.filter(
-    (item) =>
-      item.category === activeCategory &&
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredItems = foodItems;
 
   const handleFoodPress = (id: string) => {
     const item = foodItems.find((i) => i.id === id);
@@ -115,7 +109,7 @@ export default function HomeScreen() {
                 size={14}
                 color={COLORS.textLight}
               />
-              {" 123 Main St, City"}
+              {` ${userProfile?.address ? userProfile.address : "123 Main St, City"}`}
             </Text>
           </View>
           <TouchableOpacity
@@ -135,14 +129,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Categories */}
-        <CategoriesSection
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
-
-        <Text style={styles.resultsTitle}>Popular Items</Text>
+        <Text style={styles.resultsTitle}>Menu</Text>
       </View>
     );
   };
@@ -174,11 +161,7 @@ export default function HomeScreen() {
       <View style={styles.emptyContainer}>
         <MaterialIcons name="restaurant" size={64} color={COLORS.gray300} />
         <Text style={styles.emptyTitle}>No items found</Text>
-        <Text style={styles.emptySubtitle}>
-          {searchQuery
-            ? "Try searching for something else"
-            : "No items in this category yet"}
-        </Text>
+        <Text style={styles.emptySubtitle}>No items available</Text>
       </View>
     );
   };
