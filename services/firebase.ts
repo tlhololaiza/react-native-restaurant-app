@@ -9,6 +9,7 @@ import {
 } from "firebase/auth";
 import {
   doc,
+  enableIndexedDbPersistence,
   getDoc,
   getDocFromCache,
   getFirestore,
@@ -30,16 +31,23 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-// Enable offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === "failed-precondition") {
-    console.warn(
-      "Multiple tabs open, persistence can only be enabled in one tab at a time.",
-    );
-  } else if (err.code === "unimplemented") {
-    console.warn("The current browser does not support offline persistence");
-  }
-});
+// Enable offline persistence (only in browser environments that support IndexedDB)
+if (
+  typeof window !== "undefined" &&
+  typeof (window as any).indexedDB !== "undefined"
+) {
+  enableIndexedDbPersistence(db).catch((err) => {
+    if (err.code === "failed-precondition") {
+      console.warn(
+        "Multiple tabs open, persistence can only be enabled in one tab at a time.",
+      );
+    } else if (err.code === "unimplemented") {
+      console.warn("The current browser does not support offline persistence");
+    }
+  });
+} else {
+  // Not a browser or IndexedDB unavailable (e.g., native platforms) — skip enabling persistence.
+}
 
 // User profile type
 export interface UserProfile {

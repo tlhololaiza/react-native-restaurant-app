@@ -11,7 +11,24 @@ export default function OrderSuccessScreen() {
     total?: string;
   }>();
 
-  const totalAmount = total ? Number(total) : 0;
+  // Decode params that may have been URL-encoded on web
+  const rawOrderNumber = orderNumber ? String(orderNumber) : "";
+  const rawTotal = total ? String(total) : "";
+
+  let decodedOrderNumber = rawOrderNumber;
+  let decodedTotal = rawTotal;
+  try {
+    decodedOrderNumber = decodeURIComponent(rawOrderNumber);
+  } catch {
+    decodedOrderNumber = rawOrderNumber;
+  }
+  try {
+    decodedTotal = decodeURIComponent(rawTotal);
+  } catch {
+    decodedTotal = rawTotal;
+  }
+
+  const totalAmount = decodedTotal ? Number(decodedTotal) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -37,7 +54,9 @@ export default function OrderSuccessScreen() {
         <View style={styles.orderDetailsCard}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Order Number</Text>
-            <Text style={styles.detailValue}>#{orderNumber || "12345678"}</Text>
+            <Text style={styles.detailValue}>
+              #{decodedOrderNumber || "12345678"}
+            </Text>
           </View>
 
           <View style={styles.divider} />
