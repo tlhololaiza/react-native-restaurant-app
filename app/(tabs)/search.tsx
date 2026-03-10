@@ -10,7 +10,16 @@ import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import {
+  Alert,
+  FlatList,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from "react-native";
 
 // Categories mapping (imported from utils/categories)
 
@@ -63,6 +72,11 @@ export default function SearchScreen() {
         quantity: 1,
         image: item.image,
       });
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Added to cart", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Added to cart", `${item.name} was added to your cart.`);
+      }
     }
   };
 

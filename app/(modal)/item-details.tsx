@@ -1,6 +1,7 @@
 import { Button } from "@/components/Button";
 import { useCartStore } from "@/utils/cartStore";
 import { COLORS } from "@/utils/colors";
+import { useFavouritesStore } from "@/utils/favouritesStore";
 import {
   commonStyles,
   RADIUS,
@@ -12,13 +13,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Image,
-  SafeAreaView,
+  Alert, Image, Platform, SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+  Text, ToastAndroid, TouchableOpacity,
+  View
 } from "react-native";
 
 type PassedItem = {
@@ -35,6 +34,7 @@ export default function ItemDetailsScreen() {
   const { item: itemParam } = useLocalSearchParams<{ item?: string }>();
   const [item, setItem] = useState<PassedItem | null>(null);
   const { addItem } = useCartStore();
+  const { toggleFavourite, isFavourite } = useFavouritesStore();
 
   useEffect(() => {
     if (itemParam) {
@@ -112,7 +112,39 @@ export default function ItemDetailsScreen() {
       sides: sideData ? sideData.name : undefined,
     });
 
+    if (Platform.OS === "android") {
+      ToastAndroid.show("Added to cart", ToastAndroid.SHORT);
+    } else {
+      Alert.alert("Added to cart", `${item?.name} was added to your cart.`);
+    }
+
     router.back();
+  };
+
+  const handleToggleFavourite = () => {
+    if (!item) return;
+    toggleFavourite({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+    });
+    if (Platform.OS === "android") {
+      ToastAndroid.show(
+        isFavourite(item.id)
+          ? "Removed from favourites"
+          : "Added to favourites",
+        ToastAndroid.SHORT,
+      );
+    } else {
+      Alert.alert(
+        isFavourite(item.id)
+          ? "Removed from favourites"
+          : "Added to favourites",
+        `${item.name}`,
+      );
+    }
+    router.push("/(tabs)/favourites");
   };
 
   return (
@@ -123,8 +155,12 @@ export default function ItemDetailsScreen() {
           <MaterialIcons name="close" size={24} color={COLORS.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Details</Text>
-        <TouchableOpacity>
-          <MaterialIcons name="favorite-border" size={24} color={COLORS.text} />
+        <TouchableOpacity onPress={handleToggleFavourite}>
+          <MaterialIcons
+            name={isFavourite(item?.id ?? "") ? "favorite" : "favorite-border"}
+            size={24}
+            color={COLORS.text}
+          />
         </TouchableOpacity>
       </View>
 
@@ -239,48 +275,7 @@ export default function ItemDetailsScreen() {
             ))}
           </View>
 
-          {/* Suggested Items */}
-          <View style={styles.suggestedSection}>
-            <Text style={styles.sectionTitle}>Also Try</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.suggestedScroll}
-            >
-              <TouchableOpacity style={styles.suggestedCard}>
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=300&h=300&fit=crop",
-                  }}
-                  style={styles.suggestedImage}
-                />
-                <Text style={styles.suggestedName}>Pizza</Text>
-                <Text style={styles.suggestedPrice}>R129</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.suggestedCard}>
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1626082927389-6cd097cfd83e?w=300&h=300&fit=crop",
-                  }}
-                  style={styles.suggestedImage}
-                />
-                <Text style={styles.suggestedName}>Chicken</Text>
-                <Text style={styles.suggestedPrice}>R99</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.suggestedCard}>
-                <Image
-                  source={{
-                    uri: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=300&h=300&fit=crop",
-                  }}
-                  style={styles.suggestedImage}
-                />
-                <Text style={styles.suggestedName}>Dessert</Text>
-                <Text style={styles.suggestedPrice}>R59</Text>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
+          {/* Suggested items removed per request */}
         </View>
       </ScrollView>
 
@@ -443,29 +438,6 @@ const styles = StyleSheet.create({
   },
   suggestedSection: {
     marginBottom: SPACING.xl,
-  },
-  suggestedScroll: {
-    marginHorizontal: -SPACING.lg,
-    paddingHorizontal: SPACING.lg,
-  },
-  suggestedCard: {
-    marginRight: SPACING.lg,
-    alignItems: "center",
-  },
-  suggestedImage: {
-    width: 120,
-    height: 120,
-    borderRadius: RADIUS.lg,
-    marginBottom: SPACING.sm,
-  },
-  suggestedName: {
-    ...TYPOGRAPHY.bodyBold,
-    color: COLORS.text,
-  },
-  suggestedPrice: {
-    ...TYPOGRAPHY.subtitle,
-    color: COLORS.primary,
-    fontWeight: "700",
   },
   bottomSection: {
     paddingHorizontal: SPACING.lg,

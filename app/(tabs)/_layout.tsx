@@ -1,9 +1,13 @@
 import { COLORS } from "@/utils/colors";
+import { useFavouritesStore } from "@/utils/favouritesStore";
 import { SPACING } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function TabsLayout() {
+  const favCount = useFavouritesStore((s) => s.getCount());
+
   return (
     <Tabs
       screenOptions={{
@@ -29,6 +33,22 @@ export default function TabsLayout() {
           title: "Home",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="home" size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="favourites"
+        options={{
+          title: "Favourites",
+          tabBarIcon: ({ color }) => (
+            <View>
+              <MaterialIcons name="favorite" size={24} color={color} />
+              {favCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{favCount}</Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
@@ -62,3 +82,23 @@ export default function TabsLayout() {
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  badge: {
+    position: "absolute",
+    right: -8,
+    top: -6,
+    backgroundColor: "red",
+    minWidth: 16,
+    height: 16,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  badgeText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "700",
+  },
+});

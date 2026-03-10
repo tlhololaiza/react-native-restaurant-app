@@ -12,12 +12,15 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   ImageBackground,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -103,6 +106,11 @@ export default function HomeScreen() {
         quantity: 1,
         image: item.image,
       });
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Added to cart", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Added to cart", `${item.name} was added to your cart.`);
+      }
     }
   };
 
