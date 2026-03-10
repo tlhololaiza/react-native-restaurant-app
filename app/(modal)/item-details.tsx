@@ -13,11 +13,16 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert, Image, Platform, SafeAreaView,
+  Alert,
+  Image,
+  Platform,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text, ToastAndroid, TouchableOpacity,
-  View
+  Text,
+  ToastAndroid,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type PassedItem = {
@@ -159,7 +164,7 @@ export default function ItemDetailsScreen() {
           <MaterialIcons
             name={isFavourite(item?.id ?? "") ? "favorite" : "favorite-border"}
             size={24}
-            color={COLORS.text}
+            color={isFavourite(item?.id ?? "") ? COLORS.primary : COLORS.text}
           />
         </TouchableOpacity>
       </View>

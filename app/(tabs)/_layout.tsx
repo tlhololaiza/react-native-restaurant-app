@@ -1,3 +1,4 @@
+import { useCartStore } from "@/utils/cartStore";
 import { COLORS } from "@/utils/colors";
 import { useFavouritesStore } from "@/utils/favouritesStore";
 import { SPACING } from "@/utils/theme";
@@ -7,6 +8,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 export default function TabsLayout() {
   const favCount = useFavouritesStore((s) => s.getCount());
+  const cartCount = useCartStore((s) => s.getItemCount());
 
   return (
     <Tabs
@@ -66,7 +68,14 @@ export default function TabsLayout() {
         options={{
           title: "Cart",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons name="shopping-cart" size={24} color={color} />
+            <View>
+              <MaterialIcons name="shopping-cart" size={24} color={color} />
+              {cartCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{cartCount}</Text>
+                </View>
+              )}
+            </View>
           ),
         }}
       />
@@ -88,7 +97,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: -8,
     top: -6,
-    backgroundColor: "red",
+    backgroundColor: COLORS.primary,
     minWidth: 16,
     height: 16,
     paddingHorizontal: 4,

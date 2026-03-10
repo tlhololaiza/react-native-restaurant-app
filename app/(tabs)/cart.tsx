@@ -144,7 +144,7 @@ export default function CartScreen() {
         renderItem={renderCartItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
-        scrollEnabled={false}
+        style={{ flex: 1 }}
       />
 
       {/* Clear Cart Button */}
