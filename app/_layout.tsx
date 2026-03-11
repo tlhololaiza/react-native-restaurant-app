@@ -33,6 +33,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name="(admin)"
+          options={{
+            gestureEnabled: false,
+          }}
+        />
+        <Stack.Screen
           name="(modal)"
           options={{
             presentation: "modal",

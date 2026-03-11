@@ -8,6 +8,7 @@ import {
   getDocs,
   orderBy,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 
@@ -82,6 +83,35 @@ export const getOrderById = async (orderId: string): Promise<Order | null> => {
     const snap = await getDoc(doc(firestore, COLLECTION, orderId));
     if (!snap.exists()) return null;
     return { id: snap.id, ...snap.data() } as Order;
+  } catch (error: any) {
+    throw new Error(error.message || String(error));
+  }
+};
+
+// Admin: get all orders across all users
+export const getAllOrders = async (): Promise<Order[]> => {
+  try {
+    const q = query(
+      collection(firestore, COLLECTION),
+      orderBy("createdAt", "desc"),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Order);
+  } catch (error: any) {
+    throw new Error(error.message || String(error));
+  }
+};
+
+// Admin: update the status of any order
+export const updateOrderStatus = async (
+  orderId: string,
+  status: Order["status"],
+): Promise<void> => {
+  try {
+    await updateDoc(doc(firestore, COLLECTION, orderId), {
+      status,
+      updatedAt: Date.now(),
+    });
   } catch (error: any) {
     throw new Error(error.message || String(error));
   }

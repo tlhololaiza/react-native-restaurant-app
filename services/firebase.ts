@@ -32,9 +32,12 @@ export interface UserProfile {
   cardHolder?: string;
   cardExpiry?: string;
   cardCVV?: string;
+  isAdmin?: boolean;
   createdAt: number;
   updatedAt: number;
 }
+
+const ADMIN_EMAIL = "admin@foodhub.com";
 
 const toUser = (fbUser: {
   uid: string;
@@ -67,6 +70,7 @@ export const registerUser = async (
     uid: fbUser.uid,
     email,
     ...userData,
+    isAdmin: email.toLowerCase() === ADMIN_EMAIL,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };

@@ -90,7 +90,11 @@ export default function RegisterScreen() {
         setUserProfile(profile);
       }
 
-      router.replace("/(tabs)/home");
+      if (profile?.isAdmin) {
+        router.replace("/(admin)/dashboard" as any);
+      } else {
+        router.replace("/(tabs)/home");
+      }
     } catch (error: any) {
       const errorMessage =
         error.message || "Registration failed. Please try again.";

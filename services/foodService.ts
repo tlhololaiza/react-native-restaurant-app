@@ -2,8 +2,10 @@ import { auth, firestore } from "@/services/firebaseClient";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   getDocs,
+  updateDoc,
   writeBatch,
 } from "firebase/firestore";
 
@@ -284,4 +286,18 @@ export const seedFoodItems = async (): Promise<void> => {
     console.error("seedFoodItems: Error seeding Firestore:", error);
     throw error;
   }
+};
+
+export const updateFoodItem = async (
+  id: string,
+  updates: Partial<Omit<FoodItem, "id" | "createdAt">>,
+): Promise<void> => {
+  await updateDoc(doc(firestore, COLLECTION, id), {
+    ...updates,
+    updatedAt: Date.now(),
+  });
+};
+
+export const deleteFoodItem = async (id: string): Promise<void> => {
+  await deleteDoc(doc(firestore, COLLECTION, id));
 };

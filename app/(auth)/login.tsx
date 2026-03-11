@@ -75,7 +75,11 @@ export default function LoginScreen() {
         setUserProfile(profile);
       }
 
-      router.replace("/(tabs)/home");
+      if (profile?.isAdmin) {
+        router.replace("/(admin)/dashboard" as any);
+      } else {
+        router.replace("/(tabs)/home");
+      }
     } catch (error: any) {
       const errorMessage = error.message || "Login failed. Please try again.";
       setErrors({ general: errorMessage });
