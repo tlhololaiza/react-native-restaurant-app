@@ -3,23 +3,18 @@ import { getUserOrders, Order } from "@/services/orderService";
 import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
 import { COLORS } from "@/utils/colors";
-import {
-    commonStyles,
-    RADIUS,
-    SPACING,
-    TYPOGRAPHY
-} from "@/utils/theme";
+import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function OrderDetailsModal() {
