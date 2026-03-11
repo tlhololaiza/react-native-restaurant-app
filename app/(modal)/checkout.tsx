@@ -114,8 +114,12 @@ export default function CheckoutScreen() {
         pathname: "/(modal)/order-success",
         params: { orderNumber: orderId, total },
       });
-    } catch {
-      Alert.alert("Error", "Failed to place order. Please try again.");
+    } catch (error: any) {
+      console.error("Place order failed:", error?.message || error);
+      Alert.alert(
+        "Error",
+        error?.message || "Failed to place order. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

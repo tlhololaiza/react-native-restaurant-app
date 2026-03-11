@@ -29,6 +29,7 @@ export default function OrdersModal() {
   const { user } = useAuthStore();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] =
     useState<(typeof DATE_OPTIONS)[number]>("all");
@@ -37,11 +38,13 @@ export default function OrdersModal() {
     const load = async () => {
       if (!user) return;
       setLoading(true);
+      setFetchError(null);
       try {
         const list = await getUserOrders(user.uid);
         setOrders(list);
-      } catch (e) {
-        console.error("Failed to load orders", e);
+      } catch (e: any) {
+        console.error("Failed to load orders:", e?.message || e);
+        setFetchError(e?.message || "Failed to load orders");
       } finally {
         setLoading(false);
       }
@@ -75,7 +78,7 @@ export default function OrdersModal() {
 
   const handleOpen = (order: Order) => {
     router.push({
-      pathname: "(modal)/order-details",
+      pathname: "/(modal)/order-details",
       params: { id: order.id },
     });
   };
@@ -123,6 +126,17 @@ export default function OrdersModal() {
         </View>
       </View>
 
+      {fetchError && (
+        <Text
+          style={{
+            color: COLORS.error,
+            paddingHorizontal: SPACING.lg,
+            paddingBottom: SPACING.sm,
+          }}
+        >
+          {fetchError}
+        </Text>
+      )}
       <FlatList
         data={filtered}
         keyExtractor={(o) => o.id ?? String(Math.random())}
