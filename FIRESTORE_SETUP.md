@@ -56,10 +56,10 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Only authenticated users can read food items; no public writes
+    // Food items are public menu data — anyone can read, only authenticated users can write (for seeding)
     match /foods/{foodId} {
-      allow read: if request.auth != null;
-      allow write: if false;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // Users can only read and write their own orders

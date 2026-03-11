@@ -1,5 +1,11 @@
-import { _storageKeys } from "@/services/firebase";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, firestore } from "@/services/firebaseClient";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  writeBatch,
+} from "firebase/firestore";
 
 export type FoodCategory =
   | "burgers"
@@ -228,16 +234,21 @@ const MOCK_FOOD_ITEMS: FoodItem[] = [
 
 export const getFoodItems = async (): Promise<FoodItem[]> => {
   try {
-    const raw = await AsyncStorage.getItem(_storageKeys.KEY_FOODS);
-    if (!raw) return MOCK_FOOD_ITEMS;
-    const items = JSON.parse(raw) as FoodItem[];
-    if (!items || items.length === 0) return MOCK_FOOD_ITEMS;
-    return items;
+    const snap = await getDocs(collection(firestore, COLLECTION));
+    if (snap.empty) {
+      // Only attempt seeding when a user is logged in (write rules require auth)
+      if (auth.currentUser) {
+        try {
+          await seedFoodItems();
+        } catch (seedError) {
+          console.warn("getFoodItems: Seeding skipped:", seedError);
+        }
+      }
+      return MOCK_FOOD_ITEMS;
+    }
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() }) as FoodItem);
   } catch (error) {
-    console.error(
-      "getFoodItems: Error reading storage, using mock data:",
-      error,
-    );
+    console.error("getFoodItems: Firestore error, using mock data:", error);
     return MOCK_FOOD_ITEMS;
   }
 };
@@ -245,68 +256,32 @@ export const getFoodItems = async (): Promise<FoodItem[]> => {
 export const addFoodItem = async (
   item: Omit<FoodItem, "id" | "createdAt" | "updatedAt">,
 ): Promise<string> => {
-  const key = _storageKeys.KEY_FOODS;
-  const items = await (async () => {
-    try {
-      const raw = await AsyncStorage.getItem(key);
-      return raw ? (JSON.parse(raw) as FoodItem[]) : [];
-    } catch {
-      return [] as FoodItem[];
-    }
-  })();
-
-  const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   const now = Date.now();
-  const newItem: FoodItem = {
-    id,
+  const ref = await addDoc(collection(firestore, COLLECTION), {
     ...item,
     createdAt: now,
     updatedAt: now,
-  };
-  items.push(newItem);
-  await AsyncStorage.setItem(key, JSON.stringify(items));
-  return id;
+  });
+  return ref.id;
 };
 
-export const seedFoodItems = async () => {
-  const seed: Omit<FoodItem, "id" | "createdAt" | "updatedAt">[] = [
-    // reuse a subset of MOCK_FOOD_ITEMS for seeding
-    ...MOCK_FOOD_ITEMS.map(
-      ({ name, description, price, image, category, rating, reviews }) => ({
-        name,
-        description,
-        price,
-        image,
-        category,
-        rating,
-        reviews,
-      }),
-    ),
-  ];
-
+export const seedFoodItems = async (): Promise<void> => {
   try {
-    const key = _storageKeys.KEY_FOODS;
-    const existing = await AsyncStorage.getItem(key);
-    if (existing) {
-      const parsed = JSON.parse(existing) as FoodItem[];
-      if (parsed.length > 0) return parsed.map((i) => i.id);
-    }
+    // Check if Firestore already has data before seeding
+    const snap = await getDocs(collection(firestore, COLLECTION));
+    if (!snap.empty) return;
 
-    const items: FoodItem[] = seed.map((item) => ({
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      ...item,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }));
-    await AsyncStorage.setItem(key, JSON.stringify(items));
-    return items.map((i) => i.id);
+    const now = Date.now();
+    const batch = writeBatch(firestore);
+    MOCK_FOOD_ITEMS.forEach((item) => {
+      const ref = doc(collection(firestore, COLLECTION));
+      const { id: _id, ...rest } = item;
+      batch.set(ref, { ...rest, createdAt: now, updatedAt: now });
+    });
+    await batch.commit();
+    console.log("Firestore seeded with", MOCK_FOOD_ITEMS.length, "food items");
   } catch (error) {
-    console.error("seedFoodItems: Error seeding items:", error);
+    console.error("seedFoodItems: Error seeding Firestore:", error);
     throw error;
   }
-};
-
-const mapDocToFoodItem = (_: QueryDocumentSnapshot): FoodItem => {
-  // No-op compatibility shim; not used with AsyncStorage backend.
-  throw new Error("mapDocToFoodItem is not supported in AsyncStorage mode");
 };
