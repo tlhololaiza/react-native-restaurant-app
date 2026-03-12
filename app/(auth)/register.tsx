@@ -184,6 +184,8 @@ export default function RegisterScreen() {
               error={errors.password}
             />
 
+            <Text style={styles.sectionTitle}>Contact & Delivery</Text>
+
             <InputField
               label="Confirm Password"
               placeholder="Confirm your password"
@@ -192,6 +194,27 @@ export default function RegisterScreen() {
               secureTextEntry
               error={errors.confirmPassword}
             />
+
+            <View style={styles.row}>
+              <InputField
+                label="Expiry"
+                placeholder="MM/YY"
+                value={formData.cardExpiry}
+                onChangeText={(value) => updateForm("cardExpiry", value)}
+                keyboardType="numeric"
+                error={errors.cardExpiry}
+                style={styles.halfInput}
+              />
+              <InputField
+                label="CVV"
+                placeholder="123"
+                value={formData.cardCVV}
+                onChangeText={(value) => updateForm("cardCVV", value)}
+                keyboardType="numeric"
+                error={errors.cardCVV}
+                style={styles.halfInput}
+              />
+            </View>
 
             {/* General Error */}
             {errors.general && (
@@ -292,6 +315,12 @@ const styles = StyleSheet.create({
   halfInput: {
     flex: 1,
     marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    ...TYPOGRAPHY.captionBold,
+    color: COLORS.textLight,
+    marginBottom: SPACING.sm,
+    marginTop: SPACING.md,
   },
   loginContainer: {
     flexDirection: "row",

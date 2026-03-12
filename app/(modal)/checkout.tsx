@@ -112,7 +112,11 @@ export default function CheckoutScreen() {
 
       router.push({
         pathname: "/(modal)/order-success",
-        params: { orderNumber: orderId, total },
+        // Pass safe string params to avoid issues with web routing
+        params: {
+          orderNumber: encodeURIComponent(String(orderId)),
+          total: encodeURIComponent(String(total)),
+        },
       });
     } catch (error: any) {
       console.error("Place order failed:", error?.message || error);

@@ -67,6 +67,12 @@ export default function CartScreen() {
               {item.extras.map((e) => e.name).join(", ")}
             </Text>
           )}
+          {item.sides && (
+            <Text style={styles.itemExtras}>Side: {item.sides}</Text>
+          )}
+          {item.drink && (
+            <Text style={styles.itemExtras}>Drink: {item.drink}</Text>
+          )}
           <Text style={styles.itemPrice}>R{itemTotal.toLocaleString()}</Text>
         </View>
 
