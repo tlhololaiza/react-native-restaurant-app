@@ -1,11 +1,20 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { auth, firestore } from "@/services/firebaseClient";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged as firebaseOnAuthStateChanged,
+  signInWithEmailAndPassword,
+  signOut,
+  updateProfile,
+} from "firebase/auth";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
+// AsyncStorage keys kept for services that still use AsyncStorage (e.g. orderService)
 const KEY_USERS = "@foodhub:users";
 const KEY_AUTH = "@foodhub:auth";
 const KEY_ORDERS = "@foodhub:orders";
 const KEY_FOODS = "@foodhub:foods";
 
-// Minimal user type used throughout the app (replaces firebase.User)
+// Minimal user type used throughout the app
 export type User = {
   uid: string;
   email?: string | null;
@@ -23,143 +32,102 @@ export interface UserProfile {
   cardHolder?: string;
   cardExpiry?: string;
   cardCVV?: string;
+  isAdmin?: boolean;
   createdAt: number;
   updatedAt: number;
 }
 
-type StoredUserRecord = {
+const ADMIN_EMAIL = "admin@foodhub.com";
+
+const toUser = (fbUser: {
   uid: string;
-  email: string;
-  password: string;
-  profile: UserProfile;
-};
+  email: string | null;
+  displayName: string | null;
+}): User => ({
+  uid: fbUser.uid,
+  email: fbUser.email,
+  displayName: fbUser.displayName,
+});
 
-let authListeners: Array<(u: User | null) => void> = [];
-
-const notifyAuthChange = (user: User | null) => {
-  authListeners.forEach((cb) => cb(user));
-};
-
-const readJson = async <T>(key: string, fallback: T): Promise<T> => {
-  try {
-    const raw = await AsyncStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as T) : fallback;
-  } catch (e) {
-    return fallback;
-  }
-};
-
-const writeJson = async (key: string, value: any) => {
-  await AsyncStorage.setItem(key, JSON.stringify(value));
-};
-
-// Register a new user (stores credentials + profile in AsyncStorage)
+// Register a new user with Firebase Auth and store the profile in Firestore
 export const registerUser = async (
   email: string,
   password: string,
   userData: Omit<UserProfile, "uid" | "createdAt" | "updatedAt" | "email">,
 ): Promise<User> => {
-  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
+  const credential = await createUserWithEmailAndPassword(
+    auth,
+    email,
+    password,
+  );
+  const fbUser = credential.user;
 
-  // Prevent duplicate email
-  const exists = Object.values(users).find((u) => u.email === email);
-  if (exists) throw new Error("Email already in use");
+  await updateProfile(fbUser, {
+    displayName: `${userData.name} ${userData.surname}`,
+  });
 
-  const uid = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   const profile: UserProfile = {
-    uid,
+    uid: fbUser.uid,
     email,
     ...userData,
+    isAdmin: email.toLowerCase() === ADMIN_EMAIL,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };
+  await setDoc(doc(firestore, "users", fbUser.uid), profile);
 
-  users[uid] = {
-    uid,
-    email,
-    password,
-    profile,
-  };
-
-  await writeJson(KEY_USERS, users);
-
-  const user: User = {
-    uid,
-    email,
-    displayName: `${userData.name} ${userData.surname}`,
-  };
-  await writeJson(KEY_AUTH, user);
-  notifyAuthChange(user);
-  return user;
+  return toUser(fbUser);
 };
 
-// Login with email + password
+// Login with Firebase Auth
 export const loginUser = async (
   email: string,
   password: string,
 ): Promise<User> => {
-  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
-  const found = Object.values(users).find(
-    (u) => u.email === email && u.password === password,
-  );
-  if (!found) throw new Error("Invalid email or password");
-
-  const user: User = {
-    uid: found.uid,
-    email: found.email,
-    displayName: `${found.profile.name} ${found.profile.surname}`,
-  };
-  await writeJson(KEY_AUTH, user);
-  notifyAuthChange(user);
-  return user;
+  const credential = await signInWithEmailAndPassword(auth, email, password);
+  return toUser(credential.user);
 };
 
 export const logoutUser = async (): Promise<void> => {
-  await AsyncStorage.removeItem(KEY_AUTH);
-  notifyAuthChange(null);
+  await signOut(auth);
 };
 
 export const getUserProfile = async (
   uid: string,
 ): Promise<UserProfile | null> => {
-  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
-  const found = users[uid];
-  return found ? found.profile : null;
+  const snap = await getDoc(doc(firestore, "users", uid));
+  return snap.exists() ? (snap.data() as UserProfile) : null;
 };
 
 export const updateUserProfile = async (
   uid: string,
   updates: Partial<UserProfile>,
 ): Promise<boolean> => {
-  const users = await readJson<Record<string, StoredUserRecord>>(KEY_USERS, {});
-  const found = users[uid];
-  if (!found) return false;
-
-  found.profile = {
-    ...found.profile,
-    ...updates,
-    updatedAt: Date.now(),
-  };
-
-  users[uid] = found;
-  await writeJson(KEY_USERS, users);
-  return true;
+  try {
+    await updateDoc(doc(firestore, "users", uid), {
+      ...updates,
+      updatedAt: Date.now(),
+    });
+    return true;
+  } catch {
+    return false;
+  }
 };
 
 export const getCurrentUser = async (): Promise<User | null> => {
-  return readJson<User | null>(KEY_AUTH, null);
+  const fbUser = auth.currentUser;
+  return fbUser ? toUser(fbUser) : null;
 };
 
-export const onAuthStateChanged = (callback: (user: User | null) => void) => {
-  authListeners.push(callback);
-  // Immediately call with current user
-  readJson<User | null>(KEY_AUTH, null).then((u) => callback(u));
-  return () => {
-    authListeners = authListeners.filter((cb) => cb !== callback);
-  };
+export const onAuthStateChanged = (
+  callback: (user: User | null) => void,
+): (() => void) => {
+  return firebaseOnAuthStateChanged(auth, (fbUser) => {
+    callback(fbUser ? toUser(fbUser) : null);
+  });
 };
 
-// Export storage keys for other services that need them
+// Export storage keys for other services that need them (e.g. orderService)
 export const _storageKeys = {
   KEY_USERS,
   KEY_AUTH,

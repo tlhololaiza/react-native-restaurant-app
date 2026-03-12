@@ -1,25 +1,20 @@
 import { Button } from "@/components/Button";
-import { getUserOrders, Order } from "@/services/orderService";
+import { getOrderById, Order } from "@/services/orderService";
 import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
 import { COLORS } from "@/utils/colors";
-import {
-    commonStyles,
-    RADIUS,
-    SPACING,
-    TYPOGRAPHY
-} from "@/utils/theme";
+import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function OrderDetailsModal() {
@@ -27,16 +22,21 @@ export default function OrderDetailsModal() {
   const { user } = useAuthStore();
   const { addItem } = useCartStore();
   const [order, setOrder] = useState<Order | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
-      if (!user || !orderId) return;
-      const orders = await getUserOrders(user.uid);
-      const found = orders.find((o) => o.id === orderId) || null;
-      setOrder(found);
+      if (!orderId) return;
+      try {
+        const found = await getOrderById(orderId);
+        setOrder(found);
+      } catch (e: any) {
+        console.error("Failed to load order:", e?.message || e);
+        setError(e?.message || "Failed to load order");
+      }
     };
     load();
-  }, [user, orderId]);
+  }, [orderId]);
 
   const handleReorder = () => {
     if (!order) return;
@@ -52,10 +52,20 @@ export default function OrderDetailsModal() {
     router.push("/(tabs)/cart");
   };
 
+  if (error) {
+    return (
+      <SafeAreaView style={commonStyles.container}>
+        <Text style={{ padding: SPACING.lg, color: COLORS.error }}>
+          {error}
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
   if (!order) {
     return (
       <SafeAreaView style={commonStyles.container}>
-        <Text style={{ padding: SPACING.lg }}>Order not found.</Text>
+        <Text style={{ padding: SPACING.lg }}>Loading order...</Text>
       </SafeAreaView>
     );
   }

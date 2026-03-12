@@ -4,25 +4,25 @@ import { getUserProfile, registerUser } from "@/services/firebase";
 import { useAuthStore } from "@/utils/authStore";
 import { COLORS } from "@/utils/colors";
 import {
-  commonStyles,
-  RADIUS,
-  SHADOWS,
-  SPACING,
-  TYPOGRAPHY,
+    commonStyles,
+    RADIUS,
+    SHADOWS,
+    SPACING,
+    TYPOGRAPHY,
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function RegisterScreen() {
@@ -90,7 +90,11 @@ export default function RegisterScreen() {
         setUserProfile(profile);
       }
 
-      router.replace("/(tabs)/home");
+      if (profile?.isAdmin) {
+        router.replace("/(admin)/dashboard" as any);
+      } else {
+        router.replace("/(tabs)/home");
+      }
     } catch (error: any) {
       const errorMessage =
         error.message || "Registration failed. Please try again.";

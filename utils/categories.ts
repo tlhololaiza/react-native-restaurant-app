@@ -9,7 +9,4 @@ export const CATEGORIES: Category[] = [
   { id: "sides", name: "Sides" },
   { id: "desserts", name: "Desserts" },
   { id: "drinks", name: "Drinks" },
-  { id: "salads", name: "Salads" },
-  { id: "vegan", name: "Vegan" },
-  { id: "seafood", name: "Seafood" },
 ];

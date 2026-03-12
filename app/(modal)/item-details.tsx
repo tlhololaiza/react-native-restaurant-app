@@ -33,6 +33,7 @@ type PassedItem = {
   description?: string;
   rating?: number;
   reviews?: number;
+  category?: string;
 };
 
 export default function ItemDetailsScreen() {
@@ -106,6 +107,10 @@ export default function ItemDetailsScreen() {
   const sidePrice = selectedSide
     ? SIDES.find((s) => s.id === selectedSide)?.price || 0
     : 0;
+
+  const showExtrasAndSides = !["drinks", "desserts"].includes(
+    item?.category ?? "",
+  );
 
   const totalPrice = ((item?.price ?? 0) + extrasTotal + sidePrice) * quantity;
 
@@ -245,95 +250,60 @@ export default function ItemDetailsScreen() {
           </View>
 
           {/* Extras Section */}
-          <View style={styles.optionsSection}>
-            <Text style={styles.sectionTitle}>Add Extras</Text>
-            {EXTRAS.map((extra) => (
-              <TouchableOpacity
-                key={extra.id}
-                style={styles.optionItem}
-                onPress={() => toggleExtra(extra.id)}
-              >
-                <View
-                  style={[
-                    styles.optionCheckbox,
-                    selectedExtras.includes(extra.id) &&
-                      styles.optionCheckboxFilled,
-                  ]}
+          {showExtrasAndSides && (
+            <View style={styles.optionsSection}>
+              <Text style={styles.sectionTitle}>Add Extras</Text>
+              {EXTRAS.map((extra) => (
+                <TouchableOpacity
+                  key={extra.id}
+                  style={styles.optionItem}
+                  onPress={() => toggleExtra(extra.id)}
                 >
-                  {selectedExtras.includes(extra.id) && (
-                    <MaterialIcons
-                      name="check"
-                      size={16}
-                      color={COLORS.white}
-                    />
-                  )}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.optionName}>{extra.name}</Text>
-                </View>
-                <Text style={styles.optionPrice}>+R{extra.price}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+                  <View style={styles.optionCheckbox}>
+                    {selectedExtras.includes(extra.id) && (
+                      <MaterialIcons
+                        name="check"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.optionName}>{extra.name}</Text>
+                  </View>
+                  <Text style={styles.optionPrice}>+R{extra.price}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* Sides Section */}
-          <View style={styles.optionsSection}>
-            <Text style={styles.sectionTitle}>Choose a Side</Text>
-            {SIDES.map((side) => (
-              <TouchableOpacity
-                key={side.id}
-                style={styles.optionItem}
-                onPress={() => selectSide(side.id)}
-              >
-                <View style={styles.optionCheckbox}>
-                  {selectedSide === side.id && (
-                    <MaterialIcons
-                      name="check"
-                      size={16}
-                      color={COLORS.white}
-                    />
-                  )}
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.optionName}>{side.name}</Text>
-                </View>
-                {side.price > 0 && (
+          {showExtrasAndSides && (
+            <View style={styles.optionsSection}>
+              <Text style={styles.sectionTitle}>Choose a Side</Text>
+              {SIDES.map((side) => (
+                <TouchableOpacity
+                  key={side.id}
+                  style={styles.optionItem}
+                  onPress={() => selectSide(side.id)}
+                >
+                  <View style={styles.optionCheckbox}>
+                    {selectedSide === side.id && (
+                      <MaterialIcons
+                        name="check"
+                        size={16}
+                        color={COLORS.white}
+                      />
+                    )}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.optionName}>{side.name}</Text>
+                  </View>
                   <Text style={styles.optionPrice}>+R{side.price}</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Drinks Section */}
-          <View style={styles.optionsSection}>
-            <Text style={styles.sectionTitle}>Choose a Drink</Text>
-            {DRINKS.map((drink) => (
-              <TouchableOpacity
-                key={drink.id}
-                style={styles.optionItem}
-                onPress={() => setSelectedDrink(drink.id)}
-              >
-                <MaterialIcons
-                  name={
-                    selectedDrink === drink.id
-                      ? "radio-button-checked"
-                      : "radio-button-unchecked"
-                  }
-                  size={22}
-                  color={
-                    selectedDrink === drink.id ? COLORS.primary : COLORS.gray400
-                  }
-                  style={styles.optionRadio}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.optionName}>{drink.name}</Text>
-                </View>
-                {drink.price > 0 && (
-                  <Text style={styles.optionPrice}>+R{drink.price}</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
 
           {/* Suggested items removed per request */}
         </View>

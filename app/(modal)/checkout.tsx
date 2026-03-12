@@ -118,8 +118,12 @@ export default function CheckoutScreen() {
           total: encodeURIComponent(String(total)),
         },
       });
-    } catch {
-      Alert.alert("Error", "Failed to place order. Please try again.");
+    } catch (error: any) {
+      console.error("Place order failed:", error?.message || error);
+      Alert.alert(
+        "Error",
+        error?.message || "Failed to place order. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

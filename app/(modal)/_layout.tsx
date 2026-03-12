@@ -33,6 +33,18 @@ export default function ModalLayout() {
           animationEnabled: false,
         }}
       />
+      <Stack.Screen
+        name="admin-add-food"
+        options={{
+          animationEnabled: true,
+        }}
+      />
+      <Stack.Screen
+        name="admin-edit-food"
+        options={{
+          animationEnabled: true,
+        }}
+      />
     </Stack>
   );
 }
