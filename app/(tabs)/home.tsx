@@ -92,7 +92,8 @@ export default function HomeScreen() {
     if (!item) return;
     router.push({
       pathname: "/(modal)/item-details",
-      params: { item: JSON.stringify(item) },
+      // Encode the item JSON so it survives URL/query transport (web safe)
+      params: { item: encodeURIComponent(JSON.stringify(item)) },
     });
   };
 

@@ -27,6 +27,7 @@ export default function ProfileScreen() {
   const { user, userProfile, setUser, setUserProfile } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
     name: userProfile?.name ?? user?.displayName ?? "",
     surname: userProfile?.surname ?? "",
@@ -77,6 +78,7 @@ export default function ProfileScreen() {
 
     Alert.alert("Saving", "Saving profile changes...");
     setLoading(true);
+    setError(null);
     try {
       const updates = {
         name: editData.name,
@@ -188,6 +190,8 @@ export default function ProfileScreen() {
             {isEditing ? editData.surname : profileData.surname}
           </Text>
         </View>
+
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
         {!isEditing ? (
           <>
@@ -442,6 +446,12 @@ const styles = StyleSheet.create({
   profileName: {
     ...TYPOGRAPHY.h3,
     color: COLORS.text,
+  },
+  errorText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.error,
+    textAlign: "center",
+    marginBottom: SPACING.md,
   },
   section: {
     marginBottom: SPACING.xxxl,

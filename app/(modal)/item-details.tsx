@@ -44,7 +44,16 @@ export default function ItemDetailsScreen() {
   useEffect(() => {
     if (itemParam) {
       try {
-        const parsed = JSON.parse(itemParam as string) as PassedItem;
+        // If the param was encoded on the sender (web), decode before parsing
+        const raw = (itemParam as string) || "";
+        const decoded = (() => {
+          try {
+            return decodeURIComponent(raw);
+          } catch {
+            return raw;
+          }
+        })();
+        const parsed = JSON.parse(decoded) as PassedItem;
         setItem(parsed);
       } catch (e) {
         console.error("Failed to parse item param:", e);
@@ -56,6 +65,7 @@ export default function ItemDetailsScreen() {
   const [quantity, setQuantity] = useState(1);
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [selectedSide, setSelectedSide] = useState<string | null>(null);
+  const [selectedDrink, setSelectedDrink] = useState<string | null>(null);
 
   const EXTRAS = [
     { id: "1", name: "Extra Cheese", price: 10 },
@@ -68,6 +78,12 @@ export default function ItemDetailsScreen() {
     { id: "s1", name: "French Fries", price: 30 },
     { id: "s2", name: "Coleslaw", price: 20 },
     { id: "s3", name: "Jalapeño Poppers", price: 25 },
+  ];
+
+  const DRINKS = [
+    { id: "d1", name: "Coke", price: 15 },
+    { id: "d2", name: "Sprite", price: 15 },
+    { id: "d3", name: "Water", price: 8 },
   ];
 
   const toggleExtra = (extraId: string) => {
@@ -237,7 +253,13 @@ export default function ItemDetailsScreen() {
                 style={styles.optionItem}
                 onPress={() => toggleExtra(extra.id)}
               >
-                <View style={styles.optionCheckbox}>
+                <View
+                  style={[
+                    styles.optionCheckbox,
+                    selectedExtras.includes(extra.id) &&
+                      styles.optionCheckboxFilled,
+                  ]}
+                >
                   {selectedExtras.includes(extra.id) && (
                     <MaterialIcons
                       name="check"
@@ -261,10 +283,10 @@ export default function ItemDetailsScreen() {
               <TouchableOpacity
                 key={side.id}
                 style={styles.optionItem}
-                onPress={() => toggleExtra(side.id)}
+                onPress={() => selectSide(side.id)}
               >
                 <View style={styles.optionCheckbox}>
-                  {selectedExtras.includes(side.id) && (
+                  {selectedSide === side.id && (
                     <MaterialIcons
                       name="check"
                       size={16}
@@ -275,7 +297,40 @@ export default function ItemDetailsScreen() {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.optionName}>{side.name}</Text>
                 </View>
-                <Text style={styles.optionPrice}>+R{side.price}</Text>
+                {side.price > 0 && (
+                  <Text style={styles.optionPrice}>+R{side.price}</Text>
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Drinks Section */}
+          <View style={styles.optionsSection}>
+            <Text style={styles.sectionTitle}>Choose a Drink</Text>
+            {DRINKS.map((drink) => (
+              <TouchableOpacity
+                key={drink.id}
+                style={styles.optionItem}
+                onPress={() => setSelectedDrink(drink.id)}
+              >
+                <MaterialIcons
+                  name={
+                    selectedDrink === drink.id
+                      ? "radio-button-checked"
+                      : "radio-button-unchecked"
+                  }
+                  size={22}
+                  color={
+                    selectedDrink === drink.id ? COLORS.primary : COLORS.gray400
+                  }
+                  style={styles.optionRadio}
+                />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.optionName}>{drink.name}</Text>
+                </View>
+                {drink.price > 0 && (
+                  <Text style={styles.optionPrice}>+R{drink.price}</Text>
+                )}
               </TouchableOpacity>
             ))}
           </View>

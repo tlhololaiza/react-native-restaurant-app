@@ -10,7 +10,7 @@ import {
 } from "react-native";
 
 interface CategoryTabsProps {
-  categories: { id: string; name: string }[];
+  categories: { id: string; name: string; icon?: keyof typeof ICON_MAP }[];
   activeCategory: string;
   onCategoryChange: (categoryId: string) => void;
   horizontal?: boolean;
@@ -39,6 +39,16 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
             ]}
             onPress={() => onCategoryChange(category.id)}
           >
+            {category.icon && (
+              <MaterialIcons
+                name={ICON_MAP[category.icon] ?? "restaurant"}
+                size={18}
+                color={
+                  activeCategory === category.id ? COLORS.white : COLORS.text
+                }
+                style={styles.tabIcon}
+              />
+            )}
             <Text
               style={[
                 styles.tabText,
@@ -64,6 +74,16 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
           ]}
           onPress={() => onCategoryChange(category.id)}
         >
+          {category.icon && (
+            <MaterialIcons
+              name={ICON_MAP[category.icon] ?? "restaurant"}
+              size={18}
+              color={
+                activeCategory === category.id ? COLORS.white : COLORS.text
+              }
+              style={styles.tabIcon}
+            />
+          )}
           <Text
             style={[
               styles.tabText,
@@ -122,5 +142,8 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: COLORS.white,
+  },
+  tabIcon: {
+    marginRight: 0,
   },
 });
