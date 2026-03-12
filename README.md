@@ -1,14 +1,14 @@
 # React Native Restaurant App
 
-A simple restaurant ordering app built with Expo and React Native. Browse menu items by category, view item details (with extras and sides), add items to a cart, and place orders. Authentication and order persistence are handled with Firebase.
+A simple restaurant ordering app built with Expo and React Native. Browse menu items by category, view item details (with extras and sides), add items to a cart, and place orders. Authentication and order persistence are handled with AsyncStorage (local device storage).
 
 ## Features
 
 - Browse food items by category
 - View item details and select extras/sides
 - Add items to cart and update quantities
-- Checkout — orders saved to Firestore (`services/orderService.ts`)
-- Email/password auth and user profiles via Firebase (`services/firebase.ts`)
+- Checkout — orders saved to AsyncStorage (`services/orderService.ts`)
+- Email/password auth and user profiles via AsyncStorage (`services/firebase.ts`)
 - Local mock data fallback and seeding helper (`services/foodService.ts`, `utils/seedService.ts`)
 
 ## Quick start
@@ -32,12 +32,12 @@ Then open the app in an emulator, simulator, or Expo Go.
 - `app/` — route-based screens (tabs, auth, modals)
 - `components/` — reusable UI components (Button, FoodCard, SearchBar)
 - `context/` — providers (Auth)
-- `services/` — Firebase integration, food and order services
+- `services/` — local storage integration, food and order services
 - `utils/` — stores (`zustand`), theming, seed helpers
 
-## Firebase
+## Local storage
 
-This project includes a sample Firebase config in `services/firebase.ts`. Replace the config with your own Firebase project for production use. The app uses Firestore to store user profiles and orders.
+This project stores user profiles, sessions, food items and orders using `@react-native-async-storage/async-storage` via the `services` helpers. The code used to depend on Firebase/Firestore; it now uses AsyncStorage so the app works offline and without a backend during development.
 
 ## Notes for development
 

@@ -1,5 +1,4 @@
-import { UserProfile } from "@/services/firebase";
-import { User } from "firebase/auth";
+import { User, UserProfile } from "@/services/firebase";
 import { create } from "zustand";
 
 interface AuthStore {

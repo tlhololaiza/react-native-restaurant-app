@@ -1,21 +1,26 @@
-import { CategoriesSection } from "@/components/CategoriesSection";
+// categories removed from home — show all foods
 import { FoodCard } from "@/components/FoodCard";
 import { getFoodItems } from "@/services/foodService";
 import { useAuthStore } from "@/utils/authStore";
 import { useCartStore } from "@/utils/cartStore";
-import { CATEGORIES } from "@/utils/categories";
 import { COLORS } from "@/utils/colors";
 import { initializeFirestoreData } from "@/utils/seedService";
 import { commonStyles, RADIUS, SPACING, TYPOGRAPHY } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Image,
+  ImageBackground,
+  Platform,
   SafeAreaView,
   StyleSheet,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,8 +28,7 @@ import {
 // Categories mapping (imported from utils/categories)
 
 export default function HomeScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("burgers");
+  // removed search and category filter; show all foods
   const { user, userProfile } = useAuthStore();
   const userName = userProfile?.name
     ? `${userProfile.name}${userProfile.surname ? ` ${userProfile.surname}` : ""}`
@@ -32,6 +36,16 @@ export default function HomeScreen() {
   const [foodItems, setFoodItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categories] = useState<string[]>([
+    "All",
+    "Starters",
+    "Burgers",
+    "Mains",
+    "Desserts",
+    "Beverages",
+    "Alcoholic Drinks",
+  ]);
+  const [activeCategory, setActiveCategory] = useState<string>("All");
   const { addItem, getItemCount } = useCartStore();
   const cartCount = getItemCount();
 
@@ -65,11 +79,13 @@ export default function HomeScreen() {
     loadData();
   }, []);
 
-  const filteredItems = foodItems.filter(
-    (item) =>
-      item.category === activeCategory &&
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredItems = foodItems;
+  const visibleItems =
+    activeCategory === "All"
+      ? filteredItems
+      : filteredItems.filter((i) => i.category === activeCategory);
+
+  const popularItems = filteredItems.filter((i) => (i.rating ?? 0) > 4.6);
 
   const handleFoodPress = (id: string) => {
     const item = foodItems.find((i) => i.id === id);
@@ -91,10 +107,19 @@ export default function HomeScreen() {
         quantity: 1,
         image: item.image,
       });
+      if (Platform.OS === "android") {
+        ToastAndroid.show("Added to cart", ToastAndroid.SHORT);
+      } else {
+        Alert.alert("Added to cart", `${item.name} was added to your cart.`);
+      }
     }
   };
 
   const renderHeader = () => {
+    const heroImage = {
+      uri: "https://images.unsplash.com/photo-1600891964599-f61ba0e24092?q=80&w=1600&auto=format&fit=crop&ixlib=rb-4.0.3&s=0c3f8fa5f21f9f1f3dbdfd56a0e0c0d8",
+    };
+
     const getGreeting = () => {
       const hour = new Date().getHours();
       if (hour < 12) return "Good Morning";
@@ -104,46 +129,68 @@ export default function HomeScreen() {
 
     return (
       <View>
-        {/* Header Bar */}
-        <View style={styles.headerBar}>
-          <View>
-            <Text style={styles.greeting}>
-              {getGreeting()}, {userName}!
-            </Text>
-            <Text style={styles.location}>
-              <MaterialIcons
-                name="location-on"
-                size={14}
-                color={COLORS.textLight}
-              />
-              {" 123 Main St, City"}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.cartIcon}
-            onPress={() => router.push("/(tabs)/cart")}
-          >
-            <MaterialIcons
-              name="shopping-cart"
-              size={24}
-              color={COLORS.white}
+        {/* NAVBAR */}
+        <View style={styles.navbar}>
+          <View style={styles.brandRow}>
+            <Image
+              source={require("../../assets/logo/logo.jpg")}
+              style={styles.logo}
+              resizeMode="contain"
             />
-            {cartCount > 0 && (
-              <View style={styles.cartBadge}>
-                <Text style={styles.cartBadgeText}>{cartCount}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
+            <Text style={styles.brand}>FoodHub</Text>
+          </View>
+          <View style={styles.navItems}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => router.push("/(tabs)/cart")}
+            >
+              <MaterialIcons
+                name="shopping-cart"
+                size={20}
+                color={COLORS.text}
+              />
+              {cartCount > 0 && (
+                <View style={styles.cartBadgeSmall}>
+                  <Text style={styles.cartBadgeTextSmall}>{cartCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Categories */}
-        <CategoriesSection
-          categories={CATEGORIES}
-          activeCategory={activeCategory}
-          onCategoryChange={setActiveCategory}
-        />
+        {/* HERO */}
+        <ImageBackground
+          source={heroImage}
+          style={styles.hero}
+          imageStyle={styles.heroImage}
+        >
+          <View style={styles.heroOverlay} />
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>
+              {getGreeting()}, {userName}! Welcome to FoodHub
+            </Text>
+            <Text style={styles.heroSubtitle} numberOfLines={2}>
+              Where we serve happiness on a plate.
+            </Text>
+            <TouchableOpacity
+              style={styles.heroButton}
+              onPress={() => setActiveCategory("All")}
+            >
+              <Text
+                style={styles.heroButtonText}
+                onPress={() => router.push("/(tabs)/search")}
+              >
+                View Menu
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ImageBackground>
 
-        <Text style={styles.resultsTitle}>Popular Items</Text>
+        <LinearGradient
+          colors={["transparent", COLORS.white]}
+          style={styles.transitionGradient}
+        />
+        <View style={{ height: SPACING.md }} />
       </View>
     );
   };
@@ -175,85 +222,101 @@ export default function HomeScreen() {
       <View style={styles.emptyContainer}>
         <MaterialIcons name="restaurant" size={64} color={COLORS.gray300} />
         <Text style={styles.emptyTitle}>No items found</Text>
-        <Text style={styles.emptySubtitle}>
-          {searchQuery
-            ? "Try searching for something else"
-            : "No items in this category yet"}
-        </Text>
+        <Text style={styles.emptySubtitle}>No items available</Text>
       </View>
     );
   };
 
   return (
     <SafeAreaView style={commonStyles.container}>
-      <FlatList
-        data={filteredItems}
-        renderItem={({ item }) => (
-          <View style={styles.foodCardWrapper}>
-            <FoodCard
-              id={item.id}
-              image={item.image}
-              name={item.name}
-              price={item.price}
-              rating={item.rating}
-              onPress={() => handleFoodPress(item.id)}
-              onCartPress={() => handleAddToCart(item.id)}
-            />
-          </View>
-        )}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={
-          filteredItems.length > 0 ? styles.columnWrapper : undefined
-        }
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmptyState}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-      />
+      {renderHeader()}
+
+      <View style={styles.popularSectionMain}>
+        <Text style={styles.popularTitle}>Our most popular</Text>
+        <FlatList
+          data={popularItems}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.popularListMain}
+          renderItem={({ item }) => (
+            <View style={styles.popularItemMain}>
+              <FoodCard
+                id={item.id}
+                image={item.image}
+                name={item.name}
+                price={item.price}
+                rating={item.rating}
+                onPress={() => handleFoodPress(item.id)}
+                onCartPress={() => handleAddToCart(item.id)}
+              />
+            </View>
+          )}
+          ListEmptyComponent={renderEmptyState}
+        />
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerBar: {
+  navbar: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: COLORS.primary,
-    padding: SPACING.lg,
-    paddingTop: 0,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.sm,
+    backgroundColor: COLORS.white,
   },
-  greeting: {
+  brand: {
     ...TYPOGRAPHY.h4,
-    color: COLORS.white,
-    marginBottom: SPACING.xs,
+    color: COLORS.primary,
   },
-  location: {
-    ...TYPOGRAPHY.caption,
-    color: "rgba(255, 255, 255, 0.8)",
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
-  cartIcon: {
-    position: "relative",
-    padding: SPACING.md,
-  },
-  cartBadge: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: COLORS.error,
+  logo: {
+    width: 36,
+    height: 36,
+    marginRight: SPACING.sm,
     borderRadius: RADIUS.full,
-    width: 24,
-    height: 24,
+    overflow: "hidden",
+  },
+  navItems: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  navMenuButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.lg,
+    marginRight: SPACING.sm,
+  },
+  navMenuText: {
+    ...TYPOGRAPHY.bodyBold,
+    color: COLORS.white,
+  },
+  iconButton: {
+    marginLeft: SPACING.sm,
+    padding: SPACING.xs,
+    position: "relative",
+  },
+  cartBadgeSmall: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: COLORS.primary,
+    width: 18,
+    height: 18,
+    borderRadius: RADIUS.full,
     ...commonStyles.centered,
   },
-  cartBadgeText: {
+  cartBadgeTextSmall: {
     ...TYPOGRAPHY.captionBold,
     color: COLORS.white,
-  },
-  categoriesSection: {
-    backgroundColor: COLORS.white,
-    paddingVertical: SPACING.lg,
+    fontSize: 10,
   },
   sectionTitle: {
     ...TYPOGRAPHY.h4,
@@ -279,6 +342,105 @@ const styles = StyleSheet.create({
   },
   foodCardWrapper: {
     flex: 1,
+  },
+  hero: {
+    height: 320,
+    justifyContent: "center",
+  },
+  heroImage: {
+    borderRadius: RADIUS.lg,
+    marginHorizontal: SPACING.lg,
+    overflow: "hidden",
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    borderRadius: RADIUS.lg,
+    marginHorizontal: SPACING.lg,
+  },
+  heroContent: {
+    position: "absolute",
+    left: SPACING.lg * 1.2,
+    right: SPACING.lg * 1.2,
+    top: 40,
+    alignItems: "flex-start",
+  },
+  heroTitle: {
+    ...TYPOGRAPHY.h2,
+    color: COLORS.white,
+    marginBottom: SPACING.sm,
+  },
+  heroSubtitle: {
+    ...TYPOGRAPHY.body,
+    color: "rgba(255,255,255,0.9)",
+    marginBottom: SPACING.md,
+  },
+  heroButton: {
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: RADIUS.full,
+  },
+  heroButtonText: {
+    ...TYPOGRAPHY.bodyBold,
+    color: COLORS.white,
+  },
+  transitionGradient: {
+    height: 36,
+    marginHorizontal: SPACING.lg,
+    marginTop: -12,
+    borderTopLeftRadius: RADIUS.lg,
+    borderTopRightRadius: RADIUS.lg,
+  },
+  popularSectionMain: {
+    backgroundColor: COLORS.white,
+    paddingTop: SPACING.sm,
+  },
+  popularTitle: {
+    ...TYPOGRAPHY.h4,
+    color: COLORS.text,
+    paddingHorizontal: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  popularListMain: {
+    paddingLeft: SPACING.lg,
+    paddingRight: SPACING.lg / 2,
+  },
+  popularItemMain: {
+    width: 180,
+    marginRight: SPACING.md,
+  },
+  menuFilters: {
+    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.white,
+    paddingBottom: SPACING.sm,
+  },
+  pillsRow: {
+    flexDirection: "row",
+    flexWrap: "nowrap",
+    gap: SPACING.sm,
+  },
+  pill: {
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.md,
+    borderRadius: RADIUS.full,
+    marginRight: SPACING.sm,
+  },
+  pillActive: {
+    backgroundColor: COLORS.primary,
+  },
+  pillInactive: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.gray200,
+  },
+  pillText: {
+    ...TYPOGRAPHY.caption,
+    color: COLORS.textLight,
+  },
+  pillTextActive: {
+    ...TYPOGRAPHY.captionBold,
+    color: COLORS.white,
   },
   emptyContainer: {
     flex: 1,

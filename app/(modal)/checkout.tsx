@@ -63,7 +63,15 @@ export default function CheckoutScreen() {
   const handlePlaceOrder = async () => {
     if (!user || !userProfile) {
       Alert.alert("Error", "Please login to place an order");
-      //router.push("/(auth)/login");
+      router.push("/(auth)/login");
+      return;
+    }
+
+    if (!deliveryAddress || deliveryAddress.trim().length === 0) {
+      Alert.alert(
+        "Address required",
+        "Please enter a delivery address before placing your order.",
+      );
       return;
     }
 
@@ -90,7 +98,7 @@ export default function CheckoutScreen() {
         userSurname: userProfile.surname,
         userEmail: userProfile.email,
         userPhone: userProfile.phone,
-        deliveryAddress: userProfile.address,
+        deliveryAddress: deliveryAddress,
         cardNumber: userProfile.cardNumber,
         items,
         subtotal,
@@ -136,7 +144,7 @@ export default function CheckoutScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Delivery Address</Text>
           <InputField
-            label="Address"
+            label="Address *"
             value={deliveryAddress}
             onChangeText={setDeliveryAddress}
             icon="location-on"

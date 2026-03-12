@@ -1,7 +1,7 @@
 import { COLORS } from "@/utils/colors";
 import { RADIUS, SHADOWS, SPACING, TYPOGRAPHY } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
-import React from "react";
+import React, { useState } from "react";
 import {
   Dimensions,
   Image,
@@ -33,13 +33,17 @@ export const FoodCard: React.FC<FoodCardProps> = ({
   onPress,
   onCartPress,
 }) => {
+  const [imgError, setImgError] = useState(false);
+  const FALLBACK_IMG =
+    "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop";
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: image }}
+          source={imgError ? { uri: FALLBACK_IMG } : { uri: image }}
           style={styles.image}
           resizeMode="cover"
+          onError={() => setImgError(true)}
         />
         {rating && (
           <View style={styles.ratingBadge}>

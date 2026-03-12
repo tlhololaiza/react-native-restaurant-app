@@ -4,23 +4,23 @@ import { logoutUser, updateUserProfile } from "@/services/firebase";
 import { useAuthStore } from "@/utils/authStore";
 import { COLORS } from "@/utils/colors";
 import {
-    commonStyles,
-    RADIUS,
-    SHADOWS,
-    SPACING,
-    TYPOGRAPHY,
+  commonStyles,
+  RADIUS,
+  SHADOWS,
+  SPACING,
+  TYPOGRAPHY,
 } from "@/utils/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import {
-    Alert,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function ProfileScreen() {
@@ -259,6 +259,22 @@ export default function ProfileScreen() {
             {/* Preferences */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Preferences</Text>
+              <TouchableOpacity
+                style={styles.preferenceItem}
+                onPress={() => router.push("/(modal)/orders")}
+              >
+                <MaterialIcons
+                  name="history"
+                  size={20}
+                  color={COLORS.primary}
+                />
+                <Text style={styles.preferenceText}>Order History</Text>
+                <MaterialIcons
+                  name="chevron-right"
+                  size={20}
+                  color={COLORS.gray400}
+                />
+              </TouchableOpacity>
               <TouchableOpacity style={styles.preferenceItem}>
                 <MaterialIcons
                   name="notifications"
