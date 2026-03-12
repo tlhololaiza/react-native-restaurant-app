@@ -22,6 +22,7 @@ A full-featured restaurant ordering app built with **Expo** and **React Native**
 - Dashboard with live analytics (total orders, revenue, pending orders, top items)
 - Manage food items — add, edit, and delete menu items
 - View and update order statuses
+- Login Credentials (email: admin@foodhub.com || password: admin123) 
 
 ---
 
